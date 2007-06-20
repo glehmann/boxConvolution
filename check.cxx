@@ -3,7 +3,7 @@
 #include "itkCommand.h"
 #include "itkSimpleFilterWatcher.h"
 
-#include "itkBoxAccumulatorImageFilter.h"
+#include "itkBoxMeanImageFilter.h"
 
 
 int main(int argc, char * argv[])
@@ -27,10 +27,10 @@ int main(int argc, char * argv[])
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName( argv[1] );
 
-  typedef itk::BoxAccumulatorImageFilter< IType, AccType > FilterType;
+  typedef itk::BoxMeanImageFilter< IType, AccType > FilterType;
   FilterType::Pointer filter = FilterType::New();
   filter->SetInput( reader->GetOutput() );
-
+  filter->SetRadius(3);
   itk::SimpleFilterWatcher watcher(filter, "filter");
 
   typedef itk::ImageFileWriter< AccType > WriterType;
