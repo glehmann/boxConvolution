@@ -171,20 +171,43 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
       for (oIt.GoToBegin(); !oIt.IsAtEnd(); ++oIt, ++N1, ++N2, ++N3)
 	{
 	AccPixType Sum = 0;
+	pixelscount = 0;
+	PixelType v;
+	bool inBound;
 	// these first two don't need loops
-	for (sIt = N1.Begin(); !sIt.IsAtEnd();++sIt)
+	for( typename NInputIterator::IndexListType::const_iterator idxIt = N1.GetActiveIndexList().begin();
+	  idxIt != N1.GetActiveIndexList().end();
+	  idxIt++ )
 	  {
-	  Sum += (AccPixType)sIt.Get();
+	  v = N1.GetPixel( *idxIt, inBound );
+	  if( inBound )
+	    {
+  	  Sum += (AccPixType) v;
+  	  pixelscount++;
+  	  }
 	  }
-	for (sIt = N2.Begin(); !sIt.IsAtEnd();++sIt)
+	for( typename NInputIterator::IndexListType::const_iterator idxIt = N2.GetActiveIndexList().begin();
+	  idxIt != N2.GetActiveIndexList().end();
+	  idxIt++ )
 	  {
-	  Sum += (AccPixType)Weight * (AccPixType)sIt.Get();
+	  v = N1.GetPixel( *idxIt, inBound );
+	  if( inBound )
+	    {
+  	  Sum += (AccPixType) v;
+  	  pixelscount++;
+  	  }
 	  }
-	for (sIt = N3.Begin(); !sIt.IsAtEnd();++sIt)
+	for( typename NInputIterator::IndexListType::const_iterator idxIt = N2.GetActiveIndexList().begin();
+	  idxIt != N2.GetActiveIndexList().end();
+	  idxIt++ )
 	  {
-	  Sum -= (AccPixType)sIt.Get();
+	  v = N1.GetPixel( *idxIt, inBound );
+	  if( inBound )
+	    {
+  	  Sum -= (AccPixType) v;
+  	  pixelscount++;
+  	  }
 	  }
-	//pixelscount = ; Any ideas here
 	oIt.Set(static_cast<OutputPixelType>(Sum/pixelscount));
 	progress.CompletedPixel();
 	}
