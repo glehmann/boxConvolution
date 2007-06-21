@@ -76,8 +76,11 @@ BoxMeanImageFilter<TInputImage, TOutputImage>
 template<class TInputImage, class TOutputImage>
 void
 BoxMeanImageFilter<TInputImage, TOutputImage>
-::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, int threadId) 
+::GenerateData() 
+// ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, int threadId) 
 {
+  this->AllocateOutputs();
+
   ProgressAccumulator::Pointer progress = ProgressAccumulator::New();
 
   progress->SetMiniPipelineFilter(this);

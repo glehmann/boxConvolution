@@ -80,9 +80,10 @@ protected:
   void GenerateInputRequestedRegion() ;
   
   /** Multi-thread version GenerateData. */
-  void  ThreadedGenerateData (const OutputImageRegionType& 
-                              outputRegionForThread,
-                              int threadId) ;
+//   void  ThreadedGenerateData (const OutputImageRegionType& 
+//                               outputRegionForThread,
+//                               int threadId);
+  void GenerateData();
 
 
 private:
