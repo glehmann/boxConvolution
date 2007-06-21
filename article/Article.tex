@@ -33,7 +33,7 @@ colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 
 % The title should be descriptive enough for people to be able to find
 % the relevant document. 
-\title{}
+\title{Efficient implementation of kernel filtering}
 
 % Increment the release number whenever significant changes are made.
 % The author and/or editor can define 'significant' however they like.
@@ -41,8 +41,10 @@ colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 
 % At minimum, give your name and an email address.  You can include a
 % snail-mail address if you like.
-\author{}
-\authoraddress{}
+\author{Richard Beare{$^1$} {\small{and}} Ga\"etan Lehmann{$^2$}}
+\authoraddress{{$^1$}Department of Medicine, Monash University, Australia.\\
+{$^2$}INRA, UMR 1198; ENVA; CNRS, FRE 2857, Biologie du D\'eveloppement et
+Reproduction, Jouy en Josas, F-78350, France}
 
 \begin{document}
 \maketitle
@@ -56,43 +58,165 @@ colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 \noindent
 % The abstract should be a paragraph or two long, and describe the
 % scope of the document.
+Kernel based filtering is one of the fundamental tools of image
+analysis and processing. A number of approaches have been developed
+that allow efficient implementation of such filters even when the
+kernel size is large. This article reviews some of these methods and
+provides introduces their ITK implementations.
 \end{abstract}
 
 \tableofcontents
 
+\section{Introduction}
+A kernel based filtering process replaces the pixel at the kernel
+origin with the result of applying a function to all pixels defined by
+the kernel. Many useful filters, including edge detection and gradient
+filters, smoothing filters and rank and morphology filters fall into
+this category. Direct implementations of such filters typically
+involve visiting all pixels defined by the kernel in order to evaluate
+the filter function. Such an approach is usually simple to implement
+-- in ITK it is made simple by the neighborhood iterators -- but leads
+to an algorithm complexity proportional to the number of pixels in the
+kernel (or $O(n^d)$, where $n$ is the kernel size and $d$ is the
+dimenionality). Such complexity tends to restrict application of such
+filters to small kernels.
 
-% \url{http://www.itk.org}
-% \code{Insight/Documentation/Style.pdf}
-% \section{Principles of Solar Spot Detection}
-% \cite{ITKSoftwareGuide}.
-% \doxygen{ImageToImageFilter}
+A number of classical methods exist for reducing this complexity to
+more managable, in some cases kernel size independent, levels. ITK
+already exploits such techniques for gaussian convolution
+operations. This paper describes the classical techniques for
+optimized mathematical morphology filters, rank filters and certain
+convolution filters. These filters make the use of large kernels,
+which can be very useful in many applications, practical on
+conventional computing hardware.
 
-% \small \begin{verbatim}
-% \end{verbatim} \normalsize
+\section{Separability and recursive implementations}
+The two approaches most typically used to reduce complexity of kernel
+based filters are separability and recursive computation, both of
+which are used in the ITK implementation of gaussian convolution
+filters. A separable filter implements a multidimensional kernel by
+cascading several one dimensional kernels, therefore reducing
+complexity from $O(n^d)$ to $O(nd)$. The second approach exploits
+redundancy that might be present in the computations of kernel
+functions at neighboring locations, leading, in some cases, to a complexity
+independent of $n$.
 
+\section{Mathematical morphology operations}
+Two optimized forms of the mathematical morphology operations of
+erosion, dilation, opening and closing are presented here. The kernel
+is usually referred to as the structring element in mathematical
+morphology. The methods described here are applied to ``flat''
+structuring elements, that is structuring elements without
+weights. The first method can be applied to arbitary structuring
+elements while the second can be applied to line structuring elements.
 
-% The {itemize} environment uses a bullet for each \item.  If you want the 
-% \item's numbered, use the {enumerate} environment instead.
-% \begin{itemize}
-%   \item  Insight Toolkit 2.4.
-%   \item  CMake 2.2
-% \end{itemize}
+\subsection{Arbitary structuring elements}
+\label{sect:MMmovingHist}
+The method described in \cite{Vandroogenbroeck96.3} relies on the
+simple concept of an updatable histogram. A histogram is computed for
+a kernel located at the first voxel. The histogram at the neighboring
+voxel can then be computed by including newly included voxels and
+removing newly excluded voxels. The list of included and excluded
+voxels corresponding to movement in any direction can be computed when
+the structuring element is created, and the direction with the
+smallest number of changes should be selected as the direction for
+sweeping the kernel across the image. The erosion or dilation at each
+location is computed by selecting the minimum or maximum from the
+histogram. This approach is very efficient when 8 or 16 bit pixels are
+used because the histogram can be represented as an array, with place
+holders tracking the current maximum or minimum increasing
+performance. More sophisticated histogram representations are
+necessary for larger pixel types. Our implementation uses c++ maps.
 
-% \ref{cthead1}
+This methodology reduces the complexity from $O(n^d)$ to $O(n^{d-1})$,
+while keeping the structuring element identical to the direct
+implementation.
+
+\subsection{Decomposition of structuring elements}
+Morphological erosions and dilations are separable -- successive
+dilations by orthogonal lines is equivalent to dilation by a rectangle
+with sides equal to the line lengths. This means that any
+hyper-rectangular structuring element can be constructed using lines
+parallel to the image axes.
+
+Approximations of more complex shapes, particulary circles and
+ellipses can constructed using a number of lines at evenly spaced
+angles \cite{Adams93}. It is difficult to create a structuring element
+with a precisely defined radius using this method because line
+structuring elements from which the circle structuring element is
+composed must have odd length and there are practical limits due to
+the realities of underlying digital grid representation of images. In
+addition it is possible that the structuring elements may not be truly
+translation invariant due to the representation of line used
+(e.g. Bresenham) in the decomposition. However, precisely defined
+radii are rarely critical when a large structuring element is called
+for. An example of a structuring element created using line
+structuring elements is shown in Figure \ref{fig:circledecomposition}. Composition of regular
+shapes, such as hexagons and octagons is more accurate.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics{cthead1}
-\caption{The input image.\label{cthead1}}
+\includegraphics{kernel}
+\caption{Approximate circular structuring element, radius 25, constructed using 8 lines.\label{fig:circledecomposition}}
 \end{figure}
 
+It is also possible, in theory, to construct 3D structuring elements
+in similar ways. The construction of a hyper-rectangle is trivial,
+however construction of spheres is more problematic. The code
+discussed later provides preliminary implementations based on some
+platonic solids and various spherical approximateions, but further
+testing and development is needed.
+
+\subsection{Line structuring elements}
+The decompositions discussed above are important because an efficient,
+recursive, implementation of erosion and dilations along lines
+exists. This method was introduced in \cite{Gil1993,vanHerk1992a} and
+can compute an erosion or dilation in 3 operations per pixel,
+independent of structuring element length. \cite{Gil2000} recently
+reduced the cost to 1.5 pixels per pixel, but the procedure is more
+complicated and there are reports of no speedup in reality.
+
+The original algorithms utilize forward and backward running maxima
+(for dilation) for the length of the structuring element from a pixel
+of interest. The dilation can then be computed for a region the size
+of the structuring element around the point of interest by comparing
+values on the running extrema that are separated by the structuring
+element length. This is illustrated in Figure \ref{fig:vHGWmethod}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[scale=0.5]{vHGWexpl}
+\caption{The van Herk, Gil, Werman method.\label{fig:vHGWmethod}}
+\end{figure}
+
+There has been a method published recently that offers improved
+performance \cite{Vandroogenbroeck2005Morphological} and the ability
+to perform a line opening directly (rather than using an
+erosion/dilation cascade). This method has been implemented in the
+filters discussed later in the article, but performance issues are not
+yet clear. The method employs histograms and therefore needs more
+complex data structures when applied to higher precision data,
+potentially any speed advantage.
+
+\section{Rank filters}
+Efficient implemetations of median and rank filters can be carried out
+using exactly the same approach as discussed for morphological
+operations with arbitary structuring elements. The method was
+originally proposed in \cite{Huang79}. The implementation discussed
+later supports arbitary kernel shapes and pixel types.
+
+Rank filters are not separable. However the performance benefits
+offered by separability make it worth pretending they are. If median
+filtering is being used to provide robust noise filtering or
+background estimation then a separable approximation is worth
+testing. This concept was originally proposed in \cite{Narendra81}.
 
 \appendix
 
 
 
 \bibliographystyle{plain}
-\bibliography{InsightJournal}
+\bibliography{InsightJournal,local}
 \nocite{ITKSoftwareGuide}
 
 \end{document}

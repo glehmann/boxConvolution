@@ -1,6 +1,6 @@
 
 # you should use the title of the article instead
-ARTICLE_TITLE = A Great Article For The Insight Journal
+ARTICLE_TITLE = Efficient implementation of kernel based filtering 
 
 # spaces are not allowed
 empty:=
@@ -11,13 +11,13 @@ NAME = Article
 
 BIBS=$(wildcard *.bib)
 
-PNGS=$(notdir $(wildcard ../images/*.png))
-JPGS=$(notdir $(wildcard ../images/*.jpg))
-DIAS=$(notdir $(wildcard ../images/*.dia))
-FIGS=$(notdir $(wildcard ../images/*.fig))
-EPSS=$(notdir $(wildcard ../images/*.eps))
-TIFS=$(notdir $(wildcard ../images/*.tif))
-PLOTS=$(notdir $(wildcard ../images/*.gnuplot))
+PNGS=$(notdir $(wildcard images/*.png))
+JPGS=$(notdir $(wildcard images/*.jpg))
+DIAS=$(notdir $(wildcard images/*.dia))
+FIGS=$(notdir $(wildcard images/*.fig))
+EPSS=$(notdir $(wildcard images/*.eps))
+TIFS=$(notdir $(wildcard images/*.tif))
+PLOTS=$(notdir $(wildcard images/*.gnuplot))
 
 OUTPUT_EPS=$(PNGS:png=eps) $(JPGS:jpg=eps) $(DIAS:dia=eps) $(FIGS:fig=eps) $(TIFS:tif=eps) $(PLOTS:gnuplot=eps) $(EPSS)
 
@@ -31,26 +31,26 @@ bbl: ${NAME}.bbl
 eps: $(OUTPUT_EPS)
 
 
-%.eps: ../images/%.png
+%.eps: ./images/%.png
 	convert $< $@
 
-%.eps: ../images/%.jpg
+%.eps: ./images/%.jpg
 	convert $< $@
 
-%.eps: ../images/%.dia
+%.eps: ./images/%.dia
 	dia --nosplash -e $@ $<
 
-%.eps: ../images/%.fig
+%.eps: ./images/%.fig
 	fig2dev -L eps $< $@
 
-%.eps: ../images/%.gnuplot
+%.eps: ./images/%.gnuplot
 	gnuplot $< > $@
 
 
 ${NAME}.ps: ${NAME}.dvi
 	dvips -R0 -o ${NAME}.ps ${NAME}.dvi
 
-%.eps: ../images/%.tif
+%.eps: ./images/%.tif
 	convert $< $@
 
 
