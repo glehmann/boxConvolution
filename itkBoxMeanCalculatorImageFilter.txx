@@ -80,6 +80,7 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
 ::GenerateData()
 //::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, int threadId) 
 {
+  ZeroFluxNeumannBoundaryCondition<TInputImage> nbc;
 
   ProgressReporter progress(this, 0, this->GetOutput()->GetRequestedRegion().GetNumberOfPixels());
 
@@ -97,22 +98,29 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
   FaceListType faceList;
   FaceListTypeIt fit;
 
-  SizeType kernelSize;
+  // this process is actually slightly asymmetric because we need to
+  // subtract rectangles that are next to our kernel, not overlapping it
+  SizeType kernelSize, internalRadius;
   for( int i=0; i<ImageDimension; i++ )
     {
     kernelSize[i] = m_Radius[i] * 2 + 1;
+    internalRadius[i] = m_Radius[i] + 1;
     }
 
-  faceList = faceCalculator(accImage, inputRegion, m_Radius);
+  faceList = faceCalculator(accImage, inputRegion, internalRadius);
   // start with the body region
   for (fit = faceList.begin(); fit != faceList.end(); ++fit)
     {
 
 
     typedef typename itk::ShapedNeighborhoodIterator<InputImageType> NInputIterator;
-    NInputIterator N1(m_Radius, accImage, *fit);
-    NInputIterator N2(m_Radius, accImage, *fit);
-    NInputIterator N3(m_Radius, accImage, *fit);
+    NInputIterator N1(internalRadius, accImage, *fit);
+    NInputIterator N2(internalRadius, accImage, *fit);
+    NInputIterator N3(internalRadius, accImage, *fit);
+    N1.OverrideBoundaryCondition(&nbc);
+    N2.OverrideBoundaryCondition(&nbc);
+    N3.OverrideBoundaryCondition(&nbc);
+
     int Weight = TInputImage::ImageDimension - 1;
     // set the correct corners
     typename NInputIterator::OffsetType offset1, offset2;
@@ -120,13 +128,12 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
     for (unsigned i = 0; i < TInputImage::ImageDimension; i++)
       {
       offset1[i] = m_Radius[i];
-      offset2[i] = -m_Radius[i];
+      offset2[i] = -internalRadius[i];
       pixelscount *= 2*m_Radius[i] + 1;
       }
 
     N1.ActivateOffset(offset1);
     N2.ActivateOffset(offset2);
-//  std::cout << offset1 << offset2 << pixelscount << std::endl;
     for (unsigned k = 0; k < TInputImage::ImageDimension; k++)
       {
       typename NInputIterator::OffsetType offset;
@@ -135,7 +142,7 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
         {
         offset[i] =  m_Radius[i];
         }
-      offset[k] *= -1;
+      offset[k] = -internalRadius[k];
 //    std::cout << "offset = " << offset << std::endl;
       N3.ActivateOffset(offset);
       }
@@ -167,7 +174,7 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
           {
           Sum -= (AccPixType)sIt.Get();
           }
-        oIt.Set(static_cast<OutputPixelType>(Sum/pixelscount));
+        oIt.Set(static_cast<OutputPixelType>((AccPixType)Sum/(AccPixType)pixelscount));
         progress.CompletedPixel();
         }
       }
@@ -179,38 +186,91 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
         AccPixType Sum = 0;
         PixelType v;
         bool inBound;
+#if 0
         // these first two don't need loops
+	for (sIt = N1.Begin(); !sIt.IsAtEnd();++sIt)
+	  {
+	  Sum += (AccPixType)sIt.Get();
+	  std::cout << "A " << sIt.Get() << std::endl;
+	  }
+	for (sIt = N2.Begin(); !sIt.IsAtEnd();++sIt)
+	  {
+	  Sum += (AccPixType)Weight * (AccPixType)sIt.Get();
+	  std::cout << "B " << sIt.Get() << std::endl;
+	  }
+	for (sIt = N3.Begin(); !sIt.IsAtEnd();++sIt)
+          {
+          Sum -= (AccPixType)sIt.Get();
+	  std::cout << "C " << sIt.Get() << std::endl;
+          }
+#else
+
+	// check the low corner is inbound
+	bool LowCornerOut = false;
+        for( typename NInputIterator::IndexListType::const_iterator idxIt = N2.GetActiveIndexList().begin();
+          idxIt != N2.GetActiveIndexList().end();
+          idxIt++ )
+          {
+          v = N2.GetPixel( *idxIt, inBound );
+	  if (!inBound) 
+	    { 
+	    LowCornerOut = !inBound;
+	    break;
+	    }
+          }
+
         for( typename NInputIterator::IndexListType::const_iterator idxIt = N1.GetActiveIndexList().begin();
           idxIt != N1.GetActiveIndexList().end();
           idxIt++ )
           {
           v = N1.GetPixel( *idxIt, inBound );
-          if( inBound )
-            {
-            Sum += (AccPixType) v;
-            }
+	  Sum += (AccPixType) v;
           }
-        for( typename NInputIterator::IndexListType::const_iterator idxIt = N2.GetActiveIndexList().begin();
-          idxIt != N2.GetActiveIndexList().end();
-          idxIt++ )
-          {
-          v = N1.GetPixel( *idxIt, inBound );
-          if( inBound )
-            {
-            Sum += (AccPixType) v;
-            }
-          }
-        for( typename NInputIterator::IndexListType::const_iterator idxIt = N2.GetActiveIndexList().begin();
-          idxIt != N2.GetActiveIndexList().end();
-          idxIt++ )
-          {
-          v = N1.GetPixel( *idxIt, inBound );
-          if( inBound )
-            {
-            Sum -= (AccPixType) v;
-            }
-          }
+	if (LowCornerOut) 
+	  {
+	  int CornerCount = 0;
+	  
+	  for( typename NInputIterator::IndexListType::const_iterator idxIt = N3.GetActiveIndexList().begin();
+	       idxIt != N3.GetActiveIndexList().end();
+	       idxIt++ )
+	    {
+	    v = N3.GetPixel( *idxIt, inBound );
+	    if (inBound)
+	      {
+	      Sum -= (AccPixType) v;
+	      }
+	    else
+	      {
+	      ++CornerCount;
+	      }
+	    }
+	  for( typename NInputIterator::IndexListType::const_iterator idxIt = N2.GetActiveIndexList().begin();
+	       idxIt != N2.GetActiveIndexList().end();
+	       idxIt++ )
+	    {
+	    v = N2.GetPixel( *idxIt, inBound );
+	    Sum += (AccPixType)(Weight - CornerCount) * (AccPixType) v;
+	    }
+	  }
+	else
+	  {
+	  for( typename NInputIterator::IndexListType::const_iterator idxIt = N3.GetActiveIndexList().begin();
+	       idxIt != N3.GetActiveIndexList().end();
+	       idxIt++ )
+	    {
+	    v = N3.GetPixel( *idxIt, inBound );
+	    Sum -= (AccPixType) v;
+	    }
 
+	  for( typename NInputIterator::IndexListType::const_iterator idxIt = N2.GetActiveIndexList().begin();
+	       idxIt != N2.GetActiveIndexList().end();
+	       idxIt++ )
+	    {
+	    v = N2.GetPixel( *idxIt, inBound );
+	    Sum += (AccPixType)Weight * (AccPixType) v;
+	    }
+	  }
+#endif
         // count the number of pixels in the neighborhood which are still inside the image region
         // To do that, the region of the kernel at the current position is computed and cropped
         // by the image region.
@@ -224,9 +284,9 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
           }
         currentKernelRegion.SetIndex( kernelRegionIdx );
         currentKernelRegion.Crop( inputRegion );
-        long pixelscount = currentKernelRegion.GetNumberOfPixels();
-        
-        oIt.Set(static_cast<OutputPixelType>(Sum/pixelscount));
+        long edgepixelscount = currentKernelRegion.GetNumberOfPixels();
+        //std::cout << oIt.GetIndex() << kernelRegionIdx << currentKernelRegion << edgepixelscount;
+        oIt.Set(static_cast<OutputPixelType>((AccPixType)Sum/(AccPixType)edgepixelscount));
         progress.CompletedPixel();
         }
       

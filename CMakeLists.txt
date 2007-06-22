@@ -20,6 +20,10 @@ SET(TEST_COMMAND ${ITK_TEST_DRIVER} --add-before-env PATH ${CMAKE_BINARY_DIR})
 SET(Required_Packages
   ITK
 )
+INCLUDE_DIRECTORIES(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 
 #this foreach loads all of the packages that you specified as required.
 #It shouldn't need to be modified.
@@ -78,6 +82,6 @@ ENDIF(BUILD_TESTING)
 # ADD_TEST(Testname ExecutableToRun arg1 arg2 arg3)
 
 ADD_TEST(Test ${TEST_COMMAND}
-   check ${INPUT_IMAGE} out.png
-   --compare out.png ${CMAKE_SOURCE_DIR}/images/test.png
+   check ${INPUT_IMAGE} out.png orig.png
+   --compare out.png orig.png
 )

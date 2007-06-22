@@ -11,7 +11,6 @@
 #include "itkBoxAccumulatorImageFilter.h"
 #include "itkBoxMeanCalculatorImageFilter.h"
 #include "itkShapedNeighborhoodIterator.h"
-
 namespace itk {
 
 

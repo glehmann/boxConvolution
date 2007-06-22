@@ -4,12 +4,13 @@
 #include "itkSimpleFilterWatcher.h"
 
 #include "itkBoxMeanImageFilter.h"
+#include "itkMeanImageFilter.h"
 
 
 int main(int argc, char * argv[])
 {
 
-  if( argc !=  3)
+  if( argc !=  4)
     {
     std::cerr << "usage: " << argv[0] << " " << std::endl;
     std::cerr << "  : " << argc << std::endl;
@@ -20,7 +21,7 @@ int main(int argc, char * argv[])
   
   typedef unsigned char PType;
   typedef itk::Image< PType, dim > IType;
-  typedef unsigned int AType;
+  typedef unsigned char AType;
   typedef itk::Image< AType, dim > AccType;
 
   typedef itk::ImageFileReader< IType > ReaderType;
@@ -31,13 +32,26 @@ int main(int argc, char * argv[])
   FilterType::Pointer filter = FilterType::New();
   filter->SetInput( reader->GetOutput() );
   filter->SetRadius(3);
-  itk::SimpleFilterWatcher watcher(filter, "filter");
+  //itk::SimpleFilterWatcher watcher(filter, "filter");
 
   typedef itk::ImageFileWriter< AccType > WriterType;
   WriterType::Pointer writer = WriterType::New();
   writer->SetInput( filter->GetOutput() );
   writer->SetFileName( argv[2] );
   writer->Update();
+
+  typedef itk::MeanImageFilter< IType, AccType > OrigFilterType;
+  OrigFilterType::Pointer filterOrig = OrigFilterType::New();
+  OrigFilterType::InputSizeType radius;
+  radius.Fill(3);
+  filterOrig->SetInput( reader->GetOutput() );
+  filterOrig->SetRadius(radius);
+
+  writer->SetInput( filterOrig->GetOutput() );
+  writer->SetFileName( argv[3] );
+  writer->Update();
+  
+  
 
   return 0;
 }
