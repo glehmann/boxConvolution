@@ -113,26 +113,28 @@ elements while the second can be applied to line structuring elements.
 \subsection{Arbitary structuring elements}
 \label{sect:MMmovingHist}
 The method described in \cite{Vandroogenbroeck96.3} relies on the
-simple concept of an updatable histogram. A histogram is computed for
-a kernel located at the first voxel. The histogram at the neighboring
-voxel can then be computed by including newly included voxels and
-removing newly excluded voxels. The list of included and excluded
-voxels corresponding to movement in any direction can be computed when
-the structuring element is created, and the direction with the
-smallest number of changes should be selected as the direction for
-sweeping the kernel across the image. The erosion or dilation at each
-location is computed by selecting the minimum or maximum from the
-histogram. This approach is very efficient when 8 or 16 bit pixels are
-used because the histogram can be represented as an array, with place
-holders tracking the current maximum or minimum increasing
-performance. More sophisticated histogram representations are
-necessary for larger pixel types. Our implementation uses c++ maps.
+simple concept of an updatable histogram, and is often described as a
+``moving histogram'' approach. A histogram is computed for a kernel
+located at the first voxel. The histogram at the neighboring voxel can
+then be computed by including newly included voxels and removing newly
+excluded voxels. The list of included and excluded voxels
+corresponding to movement in any direction can be computed when the
+structuring element is created, and the direction with the smallest
+number of changes should be selected as the direction for sweeping the
+kernel across the image. The erosion or dilation at each location is
+computed by selecting the minimum or maximum from the histogram. This
+approach is very efficient when 8 or 16 bit pixels are used because
+the histogram can be represented as an array, with place holders
+tracking the current maximum or minimum increasing performance. More
+sophisticated histogram representations are necessary for larger pixel
+types. Our implementation uses c++ maps.
 
 This methodology reduces the complexity from $O(n^d)$ to $O(n^{d-1})$,
 while keeping the structuring element identical to the direct
 implementation.
 
 \subsection{Decomposition of structuring elements}
+\label{sect:MMdecomp}
 Morphological erosions and dilations are separable -- successive
 dilations by orthogonal lines is equivalent to dilation by a rectangle
 with sides equal to the line lengths. This means that any
@@ -189,7 +191,7 @@ element length. This is illustrated in Figure \ref{fig:vHGWmethod}
 \caption{The van Herk, Gil, Werman method.\label{fig:vHGWmethod}}
 \end{figure}
 
-There has been a method published recently that offers improved
+A method published recently that offers improved
 performance \cite{Vandroogenbroeck2005Morphological} and the ability
 to perform a line opening directly (rather than using an
 erosion/dilation cascade). This method has been implemented in the
@@ -203,13 +205,70 @@ Efficient implemetations of median and rank filters can be carried out
 using exactly the same approach as discussed for morphological
 operations with arbitary structuring elements. The method was
 originally proposed in \cite{Huang79}. The implementation discussed
-later supports arbitary kernel shapes and pixel types.
+later supports arbitary kernel shapes and pixel types as well as any
+choice of rank.
 
 Rank filters are not separable. However the performance benefits
 offered by separability make it worth pretending they are. If median
 filtering is being used to provide robust noise filtering or
 background estimation then a separable approximation is worth
-testing. This concept was originally proposed in \cite{Narendra81}.
+testing. This concept was originally proposed in \cite{Narendra81}. In
+fact it is also posible to apply the decomposition discussed in
+Section \ref{sect:MMdecomp} to median filters to achieve a closer
+approximation to circular kernels.
+
+\section{Mean and variance filters}
+A simplified version of the moving histogram approach can also be used
+to efficiently compute the mean or variance of an arbitrarily shaped
+kernel. The histogram used for morphology and rank filters is a data
+structure that, once established for one pixel, can be easily updated
+to represent the kernel for a neighboring pixel. The data structure
+required to perform the equivalent function for mean and variance
+operations is much simpler -- all that is necessary is the sum of
+pixel values under the kernel (or sum of squared values for variance
+calculations), and the kernel size. The sum can be updated by adding
+the new values and subtracting the old and the output computed by
+dividing by the kernel size.
+
+A more efficient strategy was proposed in \cite{Crow84} for rectangular
+kernels. This approach first computes an accumulator image in which
+each $i,j$ is repaced by .. This accumulator image may be computed
+recursively using local neighborhood values. The mean of rectangles of
+any size may then be computed using accumulated values at the
+rectangle corners. Figures \ref{fig:accum} amd \ref{fig:accumMean}
+illustrate the 2D case and the update formulas are provided in
+Equations \ref{eq:accum} and \ref{eq:accumMean}.
+
+\begin{eqnarray}
+\label{eq:accum}
+b_{i,j} & = & \sum_{x \leq i, y \leq j} a_{x,y} \\ \nonumber
+	& = & b_{i,j-1} + b_{i-1, j} + a_{i,j} - b_{i-1, j-1}
+\end{eqnarray}
+where $b_{i,j}$ is the accumulator value at location $i,j$ and $a_{i,j}$ is the input image intensity at $i,j$.
+
+\begin{equation}
+\label{eq:accumMean}
+m_{i,j} = \frac{1}{wh} (b_{i+w/2,j+h/2} + b_{i-w/2,j-h/2} - b_{i-w/2,j+h/2} + b_{i+w/2,j-h/2})
+\end{equation}
+where $m_{i,j}$ is the output of the mean filter at location $i,j$.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[scale=0.5]{accum2D}
+\caption{Recursive computation of the accumulator image - value at $(i,j)$ computed using Equation \ref{eq:accum}.\label{fig:accum}}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[scale=0.5]{accumMean2d}
+\caption{Computation of mean using the accumulated image - lue at $(i,j)$ computed using Equation \ref{eq:accumMean}.\label{fig:accumMean}}
+\end{figure}
+
+This approach to convolution has been used recently in face detection
+applications \cite{Viola2004}, where rectangular filters of many
+different sizes and shapes were needed.
+
+\section{ITK implementation}
 
 \appendix
 

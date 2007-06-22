@@ -1,6 +1,6 @@
 
 # you should use the title of the article instead
-ARTICLE_TITLE = Efficient implementation of kernel based filtering 
+ARTICLE_TITLE = Efficient implementation of kernel based filtering
 
 # spaces are not allowed
 empty:=
