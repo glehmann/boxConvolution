@@ -147,8 +147,6 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
       N3.ActivateOffset(offset);
       }
     
-    typedef typename itk::ImageRegionIteratorWithIndex<OutputImageType> OutputIteratorType;
-    OutputIteratorType oIt(outputImage, *fit);
     
     N1.GoToBegin();
     N2.GoToBegin();
@@ -158,6 +156,8 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
     typename NInputIterator::ConstIterator sIt;
     if (fit == faceList.begin())
       {
+      typedef typename itk::ImageRegionIterator<OutputImageType> OutputIteratorType;
+      OutputIteratorType oIt(outputImage, *fit);
       for (oIt.GoToBegin(); !oIt.IsAtEnd(); ++oIt, ++N1, ++N2, ++N3)
         {
         AccPixType Sum = 0;
@@ -181,6 +181,8 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
     else
       {
       // need to compute pixelscount for each position
+      typedef typename itk::ImageRegionIteratorWithIndex<OutputImageType> OutputIteratorType;
+      OutputIteratorType oIt(outputImage, *fit);
       for (oIt.GoToBegin(); !oIt.IsAtEnd(); ++oIt, ++N1, ++N2, ++N3)
         {
         AccPixType Sum = 0;
