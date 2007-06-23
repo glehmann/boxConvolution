@@ -5,6 +5,7 @@
 
 #include "itkBoxMeanImageFilter.h"
 #include "itkMeanImageFilter.h"
+#include "itkTimeProbe.h"
 
 
 int main(int argc, char * argv[])

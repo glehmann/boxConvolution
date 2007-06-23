@@ -83,7 +83,6 @@ BoxAccumulatorImageFilter<TInputImage, TOutputImage>
   typename NOutputIterator::ConstIterator sIt;
   while ( !noutIt.IsAtEnd() )
     {
-    InputPixelType currentValue = inIt.Get();
     OutputPixelType Sum = 0;
     for (sIt = noutIt.Begin(); !sIt.IsAtEnd();++sIt)
       {
