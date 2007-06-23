@@ -127,7 +127,8 @@ approach is very efficient when 8 or 16 bit pixels are used because
 the histogram can be represented as an array, with place holders
 tracking the current maximum or minimum increasing performance. More
 sophisticated histogram representations are necessary for larger pixel
-types. Our implementation uses c++ maps.
+types. Our implementation uses c++ maps. This is an extension to the
+original paper.
 
 This methodology reduces the complexity from $O(n^d)$ to $O(n^{d-1})$,
 while keeping the structuring element identical to the direct
@@ -201,6 +202,7 @@ complex data structures when applied to higher precision data,
 potentially any speed advantage.
 
 \section{Rank filters}
+\label{sect:rank}
 Efficient implemetations of median and rank filters can be carried out
 using exactly the same approach as discussed for morphological
 operations with arbitary structuring elements. The method was
@@ -218,6 +220,7 @@ Section \ref{sect:MMdecomp} to median filters to achieve a closer
 approximation to circular kernels.
 
 \section{Mean and variance filters}
+\label{sect:meanVar}
 A simplified version of the moving histogram approach can also be used
 to efficiently compute the mean or variance of an arbitrarily shaped
 kernel. The histogram used for morphology and rank filters is a data
@@ -269,12 +272,88 @@ applications \cite{Viola2004}, where rectangular filters of many
 different sizes and shapes were needed.
 
 \section{ITK implementation}
-
 The filters discusses in this article are contained in 3 packages --
 {\em consolidatedMorphology}, {\em fastRankMean} and {\em
 boxConvolution}. The most recent versions of these packages can be
-obtained from {\bf link to Gaetan's darcs repo}.
+obtained from {\bf link to Gaetan's darcs repo}. All of the packages
+include multithreaded filters and include many examples.
 
+\subsection{Morphology filters -- consolidatedMorphology}
+An earlier version of the {\em consolidatedMorphology} package has
+been submitted to the InsightJournal. However many improvements and
+bug fixes have been included since then.
+
+The morphology filters utilize a new class -- {\em
+FlatStructuringElement} to describe, arbitary and decomposable
+structuring elements. It provides the following methods to create
+structuring elements with different characteristics:
+\begin{itemize}
+  \item \verb$Ball()$ generate a ball structuring element. It takes the 
+	radius of the structuring element as parameter.
+  \item \verb$Box()$ produces a box structuring element. It takes the radius 
+	of the structuring element as parameter.
+  \item \verb$Poly()$ produces an approximation to a circle or sphere using 
+	line structuring elements, taking the desired radius and number of 
+	lines as parameters. In the 3D case an approximation of a sphere will 
+	be attempted. Caution is advised because this is not well tested yet.
+  \item \verb$FromImage()$ produces a structuring element from an image. The image is passed
+as parameter to the method. A optional parameter can also be passed: the pixel value
+to be considered as the foreground value in the image. This value defaults to
+\verb$NumericTraits< PixelType >::max()$. This lets the user visualize the structuring element.
+\end{itemize}
+
+The algorithm used by a filter is set by the {\em SetAlgorithm}
+method, with options of {\em BASIC}, {\em HISTO}, {\em VHGW} and {\em
+ANCHOR} for the traditional ITK implementation, the moving histogram
+algorithm, the van Herk, Gil, Werman algorithm and the anchor
+algorithm respectively. The VHGW and ANCHOR algorithms can only be
+used for Box and Poly structuring elements. VHGW is more thoroughly
+tested.
+
+\subsection{Rank and mean filters -- fastRankMean}
+The {\em fastRankMean} packge using the sliding window method to
+implement rank and mean filters for arbitary kernel shapes. It also
+uses line versions of these kernels to provide a ``separable rank''
+filter -- an fast approximation to a real rank filter as discussed in
+Section \ref{sect:rank}. There are also a number of filters that
+accept a mask input and return the rank or mean value of the
+intersection of kernel and mask. These are experimental and haven't
+been thoroughly tested.
+\section{Performance}
+\subsection{Box Convolution}
+The relative times for optimized and standard convolution are shown in
+Table \ref{tab:perfBoxConv}, and demonstrate significantly improved
+performance sor kernel radii greater than 3. The execution times of
+box convolution should be relatively constant with kernel size, but an
+obvious increase is clear. This is attributable to the process of
+dealing with the boundary conditions, which utilizes shaped
+neighborhood filters. This aspect of the implementation needs further work
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{ccc}
+\hline
+Size  &  Direct &  Box \\
+\hline
+\hline
+1   &    0.0109048   &    0.0233631 \\
+2   &    0.022008    &    0.0245971 \\
+3   &    0.0434739   &    0.0263161 \\
+4   &    0.0780701   &    0.0283061 \\
+5   &    0.129174    &    0.0310797 \\
+6   &    0.199876    &    0.0344833 \\
+7   &    0.289754    &    0.0382629 \\
+8   &    0.407095    &    0.043121 \\
+9   &    0.552862    &    0.0489335 \\
+10  &    0.728667    &    0.0555441 \\
+15  &    2.17149     & 0.107776 \\
+20  &    4.83458     & 0.199508 \\
+25  &    9.12699     & 0.372637 \\
+\hline
+
+\end{tabular}
+\caption{Execution times for direct and box convolution implementations applied to the $256 \times 256$ cthead image.\label{tab:perfBoxConv}}
+\end{table}
 
 
 \appendix

@@ -44,8 +44,21 @@ int main(int argc, char * argv[])
             << "Box" << "\t"
             << std::endl;
 
+  std::vector<int> Sizes;
+
   for (unsigned R = 1; R < 11; R++)
     {
+    Sizes.push_back(R);
+    }
+
+  Sizes.push_back(15);
+  Sizes.push_back(20);
+  Sizes.push_back(25);
+
+  for (unsigned k = 0; k<Sizes.size();k++)
+    {
+    unsigned R = Sizes[k];
+
     boxConv->SetRadius(R);
     radius.Fill(R);
     directConv->SetRadius(radius);
