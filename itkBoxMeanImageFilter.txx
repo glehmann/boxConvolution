@@ -71,7 +71,7 @@ BoxMeanImageFilter<TInputImage, TOutputImage>
     }
 }
 
-
+#if 0
 template<class TInputImage, class TOutputImage>
 void
 BoxMeanImageFilter<TInputImage, TOutputImage>
@@ -102,7 +102,52 @@ BoxMeanImageFilter<TInputImage, TOutputImage>
   boxmean->Update();
   boxmean->GraftOutput(this->GetOutput());
 }
+#else
 
+// threaded version - need to allocate an internal buffer for the
+// accumulation image
+template<class TInputImage, class TOutputImage>
+void
+BoxMeanImageFilter<TInputImage, TOutputImage>
+::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, int threadId) 
+{
+
+  ProgressReporter progress(this, 0, 2*outputRegionForThread.GetNumberOfPixels());
+  // Accumulate type is too small
+  typedef typename itk::NumericTraits<PixelType>::RealType AccPixType;
+  typedef typename itk::Image<AccPixType, TInputImage::ImageDimension> AccumImageType;
+
+  typename TInputImage::SizeType internalRadius;
+  for( int i=0; i<TInputImage::ImageDimension; i++ )
+    {
+    internalRadius[i] = m_Radius[i] + 1;
+    }
+  
+
+  const InputImageType* inputImage = this->GetInput();
+  OutputImageType *outputImage = this->GetOutput();
+  RegionType accumRegion = outputRegionForThread;
+  accumRegion.PadByRadius(internalRadius);
+  accumRegion.Crop(inputImage->GetRequestedRegion());
+
+  typename AccumImageType::Pointer accImage = AccumImageType::New();
+  accImage->SetRegions(accumRegion);
+  accImage->Allocate();
+  typename AccumImageType::ConstPointer accImageConst = static_cast<typename AccumImageType::ConstPointer>(accImage);
+
+  BoxAccumulateFunction<TInputImage, AccumImageType>(inputImage, accImage, 
+						     accumRegion,
+						     accumRegion,
+						     progress);
+  BoxMeanCalculatorFunction<AccumImageType, TOutputImage>(accImageConst, outputImage,
+							  accumRegion,
+							  outputRegionForThread,
+							  m_Radius,
+							  progress);
+						     
+
+}
+#endif
 
 
 }// end namespace itk

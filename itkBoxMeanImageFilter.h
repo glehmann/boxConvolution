@@ -70,6 +70,7 @@ public:
   itkSetMacro(Radius, RadiusType)
   itkGetConstReferenceMacro(Radius, RadiusType)
 
+  void GenerateInputRequestedRegion() ;
     
 
 protected:
@@ -77,13 +78,14 @@ protected:
   BoxMeanImageFilter();
   ~BoxMeanImageFilter() {};
 
-  void GenerateInputRequestedRegion() ;
-  
+#if 1  
   /** Multi-thread version GenerateData. */
-//   void  ThreadedGenerateData (const OutputImageRegionType& 
-//                               outputRegionForThread,
-//                               int threadId);
+  void  ThreadedGenerateData (const OutputImageRegionType& 
+			      outputRegionForThread,
+			      int threadId);
+#else
   void GenerateData();
+#endif
 
 
 private:

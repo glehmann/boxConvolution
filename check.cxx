@@ -1,3 +1,4 @@
+#include "itkMultiThreader.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkCommand.h"
@@ -19,7 +20,7 @@ int main(int argc, char * argv[])
     }
 
   const int dim = 2;
-  
+  itk::MultiThreader::SetGlobalDefaultNumberOfThreads(2);  
   typedef unsigned char PType;
   typedef itk::Image< PType, dim > IType;
   typedef unsigned char AType;
