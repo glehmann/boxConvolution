@@ -83,5 +83,5 @@ ENDIF(BUILD_TESTING)
 
 ADD_TEST(Test ${TEST_COMMAND}
    check ${INPUT_IMAGE} out.png orig.png
-   --compare out.png orig.png
+   --compare out.png ${CMAKE_SOURCE_DIR}/images/test.png
 )
