@@ -12,9 +12,9 @@
 int main(int argc, char * argv[])
 {
 
-  if( argc !=  4)
+  if( argc !=  6 )
     {
-    std::cerr << "usage: " << argv[0] << " " << std::endl;
+    std::cerr << "usage: " << argv[0] << " input boxMean mean acc radius" << std::endl;
     std::cerr << "  : " << argc << std::endl;
     exit(1);
     }
@@ -23,29 +23,29 @@ int main(int argc, char * argv[])
   itk::MultiThreader::SetGlobalDefaultNumberOfThreads(1);  
   typedef unsigned char PType;
   typedef itk::Image< PType, dim > IType;
-  typedef unsigned char AType;
+  typedef float AType;
   typedef itk::Image< AType, dim > AccType;
 
   typedef itk::ImageFileReader< IType > ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName( argv[1] );
 
-  typedef itk::BoxMeanImageFilter< IType, AccType > FilterType;
+  typedef itk::BoxMeanImageFilter< IType, IType > FilterType;
   FilterType::Pointer filter = FilterType::New();
   filter->SetInput( reader->GetOutput() );
-  filter->SetRadius(3);
-  //itk::SimpleFilterWatcher watcher(filter, "filter");
+  filter->SetRadius( atoi( argv[5] ) );
+  itk::SimpleFilterWatcher watcher(filter, "filter");
 
-  typedef itk::ImageFileWriter< AccType > WriterType;
+  typedef itk::ImageFileWriter< IType > WriterType;
   WriterType::Pointer writer = WriterType::New();
   writer->SetInput( filter->GetOutput() );
   writer->SetFileName( argv[2] );
   writer->Update();
 
-  typedef itk::MeanImageFilter< IType, AccType > OrigFilterType;
+  typedef itk::MeanImageFilter< IType, IType > OrigFilterType;
   OrigFilterType::Pointer filterOrig = OrigFilterType::New();
   OrigFilterType::InputSizeType radius;
-  radius.Fill(3);
+  radius.Fill( atoi( argv[5] ) );
   filterOrig->SetInput( reader->GetOutput() );
   filterOrig->SetRadius(radius);
 
@@ -53,7 +53,16 @@ int main(int argc, char * argv[])
   writer->SetFileName( argv[3] );
   writer->Update();
   
-  
+  typedef itk::BoxAccumulatorImageFilter< IType, AccType > AccumulatorType;
+  AccumulatorType::Pointer accumulator = AccumulatorType::New();
+  accumulator->SetInput( reader->GetOutput() );
+  itk::SimpleFilterWatcher watcher2(accumulator, "accumulator");
+
+  typedef itk::ImageFileWriter< AccType > AccWriterType;
+  AccWriterType::Pointer accWriter = AccWriterType::New();
+  accWriter->SetInput( accumulator->GetOutput() );
+  accWriter->SetFileName( argv[4] );
+  accWriter->Update();
 
   return 0;
 }
