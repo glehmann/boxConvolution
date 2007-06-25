@@ -12,7 +12,7 @@
 #include "itkBoxMeanCalculatorImageFilter.h"
 #include "itkShapedNeighborhoodIterator.h"
 
-#include "ioutils.h"
+// #include "ioutils.h"
 
 namespace itk {
 
@@ -142,7 +142,7 @@ BoxMeanImageFilter<TInputImage, TOutputImage>
 						     accumRegion,
 						     accumRegion,
 						     progress);
-  writeIm<AccumImageType>(accImage, "/tmp/acc.nii.gz");
+//   writeIm<AccumImageType>(accImage, "/tmp/acc.nii.gz");
   BoxMeanCalculatorFunction<AccumImageType, TOutputImage>(accImageConst, outputImage,
 							  accumRegion,
 							  outputRegionForThread,
