@@ -7,14 +7,15 @@
 #include "itkBoxMeanImageFilter.h"
 #include "itkMeanImageFilter.h"
 #include "itkTimeProbe.h"
+#include "itkRescaleIntensityImageFilter.h"
 
 
 int main(int argc, char * argv[])
 {
 
-  if( argc !=  6 )
+  if( argc !=  7 )
     {
-    std::cerr << "usage: " << argv[0] << " input boxMean mean acc radius" << std::endl;
+    std::cerr << "usage: " << argv[0] << " input boxMean mean acc rescaledAcc radius" << std::endl;
     std::cerr << "  : " << argc << std::endl;
     exit(1);
     }
@@ -33,7 +34,7 @@ int main(int argc, char * argv[])
   typedef itk::BoxMeanImageFilter< IType, IType > FilterType;
   FilterType::Pointer filter = FilterType::New();
   filter->SetInput( reader->GetOutput() );
-  filter->SetRadius( atoi( argv[5] ) );
+  filter->SetRadius( atoi( argv[6] ) );
   itk::SimpleFilterWatcher watcher(filter, "filter");
 
   typedef itk::ImageFileWriter< IType > WriterType;
@@ -45,7 +46,7 @@ int main(int argc, char * argv[])
   typedef itk::MeanImageFilter< IType, IType > OrigFilterType;
   OrigFilterType::Pointer filterOrig = OrigFilterType::New();
   OrigFilterType::InputSizeType radius;
-  radius.Fill( atoi( argv[5] ) );
+  radius.Fill( atoi( argv[6] ) );
   filterOrig->SetInput( reader->GetOutput() );
   filterOrig->SetRadius(radius);
 
@@ -64,6 +65,14 @@ int main(int argc, char * argv[])
   accWriter->SetFileName( argv[4] );
   accWriter->Update();
 
+  typedef itk::RescaleIntensityImageFilter< AccType, IType > RescaleType;
+  RescaleType::Pointer rescale = RescaleType::New();
+  rescale->SetInput( accumulator->GetOutput() );
+
+  writer->SetInput( rescale->GetOutput() );
+  writer->SetFileName( argv[5] );
+  writer->Update();
+  
   return 0;
 }
 

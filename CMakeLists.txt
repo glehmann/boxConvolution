@@ -83,7 +83,8 @@ ENDIF(BUILD_TESTING)
 # ADD_TEST(Testname ExecutableToRun arg1 arg2 arg3)
 
 ADD_TEST(Test ${TEST_COMMAND}
-   check ${INPUT_IMAGE} out.png orig.png acc.nrrd 3
+   check ${INPUT_IMAGE} out.png orig.png acc.nrrd rescaledAcc.png 3
    --compare out.png ${CMAKE_SOURCE_DIR}/images/test.png
    --compare acc.nrrd ${CMAKE_SOURCE_DIR}/images/acc.nrrd
+   --compare rescaledAcc.png ${CMAKE_SOURCE_DIR}/images/rescaledAcc.png
 )
