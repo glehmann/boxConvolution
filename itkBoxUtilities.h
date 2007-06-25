@@ -57,7 +57,10 @@ setConnectivityEarlyBox( TIterator* it, bool fullyConnected=false )
 	  }
 	}
       if (keep)
+        {
+//         std::cout << "+  " << offset << std::endl;
 	it->ActivateOffset( offset );
+        }
       }
     offset.Fill(0);
     it->DeactivateOffset( offset );
@@ -121,6 +124,7 @@ BoxAccumulateFunction(typename TInputImage::ConstPointer inputImage,
       if (offset[k] != 0)
 	w *= offset[k];
       }
+//     std::cout << offset << "  " << w << std::endl;
     Weights.push_back(w);
     }
 
@@ -133,8 +137,6 @@ BoxAccumulateFunction(typename TInputImage::ConstPointer inputImage,
       Sum += sIt.Get() * Weights[k];
       }
     noutIt.SetCenterPixel(Sum + inIt.Get());
-    ++inIt;
-    ++noutIt;
     progress.CompletedPixel();
     }
 }
