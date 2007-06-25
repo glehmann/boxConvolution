@@ -67,7 +67,7 @@ ENDIF(BUILD_WRAPPERS)
 
 IF(BUILD_TESTING)
 
-FOREACH(CurrentExe "check" "perf2D")
+FOREACH(CurrentExe check perf2D perf_threads)
   ADD_EXECUTABLE(${CurrentExe} ${CurrentExe}.cxx)
   TARGET_LINK_LIBRARIES(${CurrentExe} ${Libraries})
 ENDFOREACH(CurrentExe)
