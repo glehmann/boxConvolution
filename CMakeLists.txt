@@ -90,6 +90,6 @@ ADD_TEST(Test ${TEST_COMMAND}
 )
 
 ADD_TEST(Test3D ${TEST_COMMAND}
-   check ${INPUT_IMAGE} out3D.tif orig3D.tif acc3D.nrrd rescaledAcc3D.tif 3
+   check3D ${CMAKE_SOURCE_DIR}/images/ESCells.img out3D.tif orig3D.tif acc3D.nrrd rescaledAcc3D.tif 3
    --compare out3D.tif ${CMAKE_SOURCE_DIR}/images/out3D.tif
 )
