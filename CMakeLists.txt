@@ -67,7 +67,7 @@ ENDIF(BUILD_WRAPPERS)
 
 IF(BUILD_TESTING)
 
-FOREACH(CurrentExe check perf2D perf_threads)
+FOREACH(CurrentExe check check3D perf2D perf_threads)
   ADD_EXECUTABLE(${CurrentExe} ${CurrentExe}.cxx)
   TARGET_LINK_LIBRARIES(${CurrentExe} ${Libraries})
 ENDFOREACH(CurrentExe)
@@ -87,4 +87,9 @@ ADD_TEST(Test ${TEST_COMMAND}
    --compare out.png ${CMAKE_SOURCE_DIR}/images/test.png
    --compare acc.nrrd ${CMAKE_SOURCE_DIR}/images/acc.nrrd
    --compare rescaledAcc.png ${CMAKE_SOURCE_DIR}/images/rescaledAcc.png
+)
+
+ADD_TEST(Test3D ${TEST_COMMAND}
+   check ${INPUT_IMAGE} out3D.tif orig3D.tif acc3D.nrrd rescaledAcc3D.tif 3
+   --compare out3D.tif ${CMAKE_SOURCE_DIR}/images/out3D.tif
 )
