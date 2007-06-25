@@ -33,7 +33,7 @@ BoxAccumulatorImageFilter<TInputImage, TOutputImage>
 {
   OutputImageType* outputImage = this->GetOutput();
   const InputImageType* inputImage = this->GetInput();
-  RegionType inputRegion = outputImage->GetRequestedRegion();
+  RegionType inputRegion = inputImage->GetRequestedRegion();
 
   this->AllocateOutputs();
 

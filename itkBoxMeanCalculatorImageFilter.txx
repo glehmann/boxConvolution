@@ -18,19 +18,20 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
 template<class TInputImage, class TOutputImage>
 void
 BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
-::GenerateData()
-//::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, int threadId) 
+::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, int threadId) 
 {
 
-  ProgressReporter progress(this, 0, this->GetOutput()->GetRequestedRegion().GetNumberOfPixels());
+  ProgressReporter progress( this, threadId, outputRegionForThread.GetNumberOfPixels() );
 
   OutputImageType* outputImage = this->GetOutput();
   const InputImageType* accImage = this->GetInput();
-  RegionType inputRegion = outputImage->GetRequestedRegion();
-  this->AllocateOutputs();
+  RegionType inputRegion = accImage->GetRequestedRegion();
+
+//   sleep(threadId);
+//   std::cout << "*****************" << std::endl;
 
   BoxMeanCalculatorFunction<TInputImage, TOutputImage>(accImage, outputImage,
-						       inputRegion, inputRegion,
+						       inputRegion, outputRegionForThread,
 						       m_Radius, progress);
 
 }

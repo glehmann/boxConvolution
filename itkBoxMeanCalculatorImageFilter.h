@@ -73,7 +73,9 @@ protected:
 
 //  void GenerateInputRequestedRegion() ;
   
-  void  GenerateData ();
+  void  ThreadedGenerateData (const OutputImageRegionType& 
+			      outputRegionForThread,
+			      int threadId);
 
 
 private:

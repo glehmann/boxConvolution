@@ -74,7 +74,7 @@ BoxMeanImageFilter<TInputImage, TOutputImage>
     }
 }
 
-#if 0
+#if 1
 template<class TInputImage, class TOutputImage>
 void
 BoxMeanImageFilter<TInputImage, TOutputImage>
@@ -99,6 +99,7 @@ BoxMeanImageFilter<TInputImage, TOutputImage>
   accumulator->SetInput(this->GetInput());
   boxmean->SetRadius(m_Radius);
   boxmean->SetInput(accumulator->GetOutput());
+  boxmean->SetNumberOfThreads( this->GetNumberOfThreads() );
   boxmean->GraftOutput(this->GetOutput());
   progress->RegisterInternalFilter(accumulator, 0.5f);
   progress->RegisterInternalFilter(boxmean, 0.5f);

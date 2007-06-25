@@ -21,7 +21,7 @@ int main(int argc, char * argv[])
     }
 
   const int dim = 2;
-  itk::MultiThreader::SetGlobalDefaultNumberOfThreads(1);  
+//   itk::MultiThreader::SetGlobalDefaultNumberOfThreads(1);  
   typedef unsigned char PType;
   typedef itk::Image< PType, dim > IType;
   typedef float AType;
