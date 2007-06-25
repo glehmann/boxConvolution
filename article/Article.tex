@@ -319,41 +319,50 @@ Section \ref{sect:rank}. There are also a number of filters that
 accept a mask input and return the rank or mean value of the
 intersection of kernel and mask. These are experimental and haven't
 been thoroughly tested.
+
+\subsection{Rectangular convolution -- boxConvolution}
+The {\em boxConvolution} uses the accumulation method described in
+Section \ref{sect:meanVar} to implement rectangular mean and variance
+computations. The filters implement different boundary conditions to
+{\em itkMeanImageFilter}, with the mean of the kernel inside the image
+being computed.
+
 \section{Performance}
+\subsection{Morpholgy}
+
+
+\subsection{Rank and Mean filters}
+
 \subsection{Box Convolution}
 The relative times for optimized and standard convolution are shown in
 Table \ref{tab:perfBoxConv}, and demonstrate significantly improved
-performance sor kernel radii greater than 3. The execution times of
-box convolution should be relatively constant with kernel size, but an
-obvious increase is clear. This is attributable to the process of
-dealing with the boundary conditions, which utilizes shaped
-neighborhood filters. This aspect of the implementation needs further work
-
+performance for kernel radii greater than 2. The times indicate the
+theoretical prediction that the complexity of the algorithm is
+independent of kernel size.
 \begin{table}[htbp]
 \centering
 \begin{tabular}{ccc}
 \hline
 Size  &  Direct &  Box \\
+1  &     0.014205    &    0.0256313 \\
+2  &     0.0355665   &    0.0257389 \\
+3  &     0.0507895   &    0.0194342 \\
+4  &     0.0745054   &    0.0152253 \\
+5  &     0.124225    &    0.0149731 \\
+6  &     0.187713    &    0.0149678 \\
+7  &     0.27351     &    0.0152494 \\
+8  &     0.411708    &    0.0155574 \\
+9  &     0.518938    &    0.0156469 \\
+10 &     0.682868    &    0.0158462 \\
+15  &    2.02712     &    0.0165146 \\
+20  &    4.46925     &    0.0176763 \\
+25  &    8.43348      & 0.0182798 \\
 \hline
 \hline
-1   &    0.0109048   &    0.0233631 \\
-2   &    0.022008    &    0.0245971 \\
-3   &    0.0434739   &    0.0263161 \\
-4   &    0.0780701   &    0.0283061 \\
-5   &    0.129174    &    0.0310797 \\
-6   &    0.199876    &    0.0344833 \\
-7   &    0.289754    &    0.0382629 \\
-8   &    0.407095    &    0.043121 \\
-9   &    0.552862    &    0.0489335 \\
-10  &    0.728667    &    0.0555441 \\
-15  &    2.17149     & 0.107776 \\
-20  &    4.83458     & 0.199508 \\
-25  &    9.12699     & 0.372637 \\
-\hline
-
 \end{tabular}
-\caption{Execution times for direct and box convolution implementations applied to the $256 \times 256$ cthead image.\label{tab:perfBoxConv}}
+\caption{Execution times for direct and box convolution implementations applied to the $256 \times 256$ cthead image on a ??.\label{tab:perfBoxConv}}
 \end{table}
+
 
 
 \appendix
