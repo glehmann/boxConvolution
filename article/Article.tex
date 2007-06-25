@@ -60,9 +60,9 @@ Reproduction, Jouy en Josas, F-78350, France}
 % scope of the document.
 Kernel based filtering is one of the fundamental tools of image
 analysis and processing. A number of approaches have been developed
-that allow efficient implementation of such filters even when the
-kernel size is large. This article reviews some of these methods and
-provides introduces their ITK implementations.
+over the years that allow efficient implementation of such filters
+even when the kernel size is large. This article reviews some of these
+methods and introduces their ITK implementations.
 \end{abstract}
 
 \tableofcontents
@@ -74,16 +74,16 @@ the kernel. Many useful filters, including edge detection and gradient
 filters, smoothing filters and rank and morphology filters fall into
 this category. Direct implementations of such filters typically
 involve visiting all pixels defined by the kernel in order to evaluate
-the filter function. Such an approach is usually simple to implement
+the filter function. Such an approach is usually easy to implement
 -- in ITK it is made simple by the neighborhood iterators -- but leads
 to an algorithm complexity proportional to the number of pixels in the
 kernel (or $O(n^d)$, where $n$ is the kernel size and $d$ is the
-dimenionality). Such complexity tends to restrict application of such
+dimensionality). Such complexity tends to restrict application of such
 filters to small kernels.
 
 A number of classical methods exist for reducing this complexity to
-more managable, in some cases kernel size independent, levels. ITK
-already exploits such techniques for gaussian convolution
+more manageable, in some cases kernel size independent, levels. ITK
+already exploits such techniques for Gaussian convolution
 operations. This paper describes the classical techniques for
 optimized mathematical morphology filters, rank filters and certain
 convolution filters. These filters make the use of large kernels,
@@ -93,7 +93,7 @@ conventional computing hardware.
 \section{Separability and recursive implementations}
 The two approaches most typically used to reduce complexity of kernel
 based filters are separability and recursive computation, both of
-which are used in the ITK implementation of gaussian convolution
+which are used in the ITK implementation of Gaussian convolution
 filters. A separable filter implements a multidimensional kernel by
 cascading several one dimensional kernels, therefore reducing
 complexity from $O(n^d)$ to $O(nd)$. The second approach exploits
@@ -104,13 +104,13 @@ independent of $n$.
 \section{Mathematical morphology operations}
 Two optimized forms of the mathematical morphology operations of
 erosion, dilation, opening and closing are presented here. The kernel
-is usually referred to as the structring element in mathematical
+is usually referred to as the structuring element in mathematical
 morphology. The methods described here are applied to ``flat''
 structuring elements, that is structuring elements without
-weights. The first method can be applied to arbitary structuring
+weights. The first method can be applied to arbitrary structuring
 elements while the second can be applied to line structuring elements.
 
-\subsection{Arbitary structuring elements}
+\subsection{Arbitrary structuring elements}
 \label{sect:MMmovingHist}
 The method described in \cite{Vandroogenbroeck96.3} relies on the
 simple concept of an updatable histogram, and is often described as a
@@ -137,12 +137,12 @@ implementation.
 \subsection{Decomposition of structuring elements}
 \label{sect:MMdecomp}
 Morphological erosions and dilations are separable -- successive
-dilations by orthogonal lines is equivalent to dilation by a rectangle
+dilation by orthogonal lines is equivalent to dilation by a rectangle
 with sides equal to the line lengths. This means that any
 hyper-rectangular structuring element can be constructed using lines
 parallel to the image axes.
 
-Approximations of more complex shapes, particulary circles and
+Approximations of more complex shapes, particularly circles and
 ellipses can constructed using a number of lines at evenly spaced
 angles \cite{Adams93}. It is difficult to create a structuring element
 with a precisely defined radius using this method because line
@@ -150,12 +150,13 @@ structuring elements from which the circle structuring element is
 composed must have odd length and there are practical limits due to
 the realities of underlying digital grid representation of images. In
 addition it is possible that the structuring elements may not be truly
-translation invariant due to the representation of line used
-(e.g. Bresenham) in the decomposition. However, precisely defined
+translation invariant due to the representation of line
+(e.g. Bresenham) used in the decomposition. However, precisely defined
 radii are rarely critical when a large structuring element is called
 for. An example of a structuring element created using line
-structuring elements is shown in Figure \ref{fig:circledecomposition}. Composition of regular
-shapes, such as hexagons and octagons is more accurate.
+structuring elements is shown in Figure
+\ref{fig:circledecomposition}. Composition of regular shapes, such as
+hexagons and octagons is more accurate.
 
 \begin{figure}[htbp]
 \centering
@@ -167,7 +168,7 @@ It is also possible, in theory, to construct 3D structuring elements
 in similar ways. The construction of a hyper-rectangle is trivial,
 however construction of spheres is more problematic. The code
 discussed later provides preliminary implementations based on some
-platonic solids and various spherical approximateions, but further
+platonic solids and various spherical approximations, but further
 testing and development is needed.
 
 \subsection{Line structuring elements}
@@ -192,22 +193,22 @@ element length. This is illustrated in Figure \ref{fig:vHGWmethod}
 \caption{The van Herk, Gil, Werman method.\label{fig:vHGWmethod}}
 \end{figure}
 
-A method published recently that offers improved
-performance \cite{Vandroogenbroeck2005Morphological} and the ability
-to perform a line opening directly (rather than using an
-erosion/dilation cascade). This method has been implemented in the
-filters discussed later in the article, but performance issues are not
-yet clear. The method employs histograms and therefore needs more
-complex data structures when applied to higher precision data,
-potentially any speed advantage.
+A method published recently that offers improved performance
+\cite{Vandroogenbroeck2005Morphological} and the ability to perform a
+line opening directly (rather than using an erosion/dilation
+cascade). This method, known as {\em anchor morphology} has been
+implemented in the filters discussed later in the article, but
+performance issues are not yet clear. The method employs histograms
+and therefore needs more complex data structures when applied to
+higher precision data, potentially reducing any speed advantage.
 
 \section{Rank filters}
 \label{sect:rank}
-Efficient implemetations of median and rank filters can be carried out
+Efficient implementations of median and rank filters can be carried out
 using exactly the same approach as discussed for morphological
-operations with arbitary structuring elements. The method was
+operations with arbitrary structuring elements. The method was
 originally proposed in \cite{Huang79}. The implementation discussed
-later supports arbitary kernel shapes and pixel types as well as any
+later supports arbitrary kernel shapes and pixel types as well as any
 choice of rank.
 
 Rank filters are not separable. However the performance benefits
@@ -215,7 +216,7 @@ offered by separability make it worth pretending they are. If median
 filtering is being used to provide robust noise filtering or
 background estimation then a separable approximation is worth
 testing. This concept was originally proposed in \cite{Narendra81}. In
-fact it is also posible to apply the decomposition discussed in
+fact it is also possible to apply the decomposition discussed in
 Section \ref{sect:MMdecomp} to median filters to achieve a closer
 approximation to circular kernels.
 
@@ -233,14 +234,15 @@ calculations), and the kernel size. The sum can be updated by adding
 the new values and subtracting the old and the output computed by
 dividing by the kernel size.
 
-A more efficient strategy was proposed in \cite{Crow84} for rectangular
-kernels. This approach first computes an accumulator image in which
-each $i,j$ is repaced by .. This accumulator image may be computed
-recursively using local neighborhood values. The mean of rectangles of
-any size may then be computed using accumulated values at the
-rectangle corners. Figures \ref{fig:accum} amd \ref{fig:accumMean}
-illustrate the 2D case and the update formulas are provided in
-Equations \ref{eq:accum} and \ref{eq:accumMean}.
+A more efficient strategy was proposed in \cite{Crow84} for
+rectangular kernels. This approach first computes an accumulator image
+in which each $i,j$ is replaced by the sum of voxels ``left'' and
+``above'' it. This accumulator image may be computed recursively using
+local neighborhood values. The mean of rectangles of any size may then
+be computed using accumulated values at the rectangle corners. Figures
+\ref{fig:accum} and \ref{fig:accumMean} illustrate the 2D case and the
+update formulas are provided in Equations \ref{eq:accum} and
+\ref{eq:accumMean}.
 
 \begin{eqnarray}
 \label{eq:accum}
@@ -264,7 +266,7 @@ where $m_{i,j}$ is the output of the mean filter at location $i,j$.
 \begin{figure}[htbp]
 \centering
 \includegraphics[scale=0.5]{accumMean2d}
-\caption{Computation of mean using the accumulated image - lue at $(i,j)$ computed using Equation \ref{eq:accumMean}.\label{fig:accumMean}}
+\caption{Computation of mean using the accumulated image - value at $(i,j)$ computed using Equation \ref{eq:accumMean}.\label{fig:accumMean}}
 \end{figure}
 
 This approach to convolution has been used recently in face detection
@@ -310,8 +312,11 @@ algorithm respectively. The VHGW and ANCHOR algorithms can only be
 used for Box and Poly structuring elements. VHGW is more thoroughly
 tested.
 
+The availability of line morphology operations means that new
+operations, such as ``union of openings'' can be implemented easily.
+
 \subsection{Rank and mean filters -- fastRankMean}
-The {\em fastRankMean} packge using the sliding window method to
+The {\em fastRankMean} packge uses the sliding window method to
 implement rank and mean filters for arbitary kernel shapes. It also
 uses line versions of these kernels to provide a ``separable rank''
 filter -- an fast approximation to a real rank filter as discussed in
@@ -325,7 +330,8 @@ The {\em boxConvolution} uses the accumulation method described in
 Section \ref{sect:meanVar} to implement rectangular mean and variance
 computations. The filters implement different boundary conditions to
 {\em itkMeanImageFilter}, with the mean of the kernel inside the image
-being computed.
+being computed. The filters in this package are multithreaded and deal
+with arbitary dimensions.
 
 \section{Performance}
 \subsection{Morpholgy}
@@ -362,6 +368,8 @@ Size  &  Direct &  Box \\
 \end{tabular}
 \caption{Execution times for direct and box convolution implementations applied to the $256 \times 256$ cthead image on a ??.\label{tab:perfBoxConv}}
 \end{table}
+
+\section{Comments and Conclusions}
 
 
 
