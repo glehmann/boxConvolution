@@ -54,10 +54,6 @@ public:
   /** n-dimensional Kernel radius. */
   typedef typename TInputImage::SizeType RadiusType ;
 
-  // itkSetMacro(Radius, RadiusType);
-  void SetRadius( const RadiusType );
-  itkGetMacro(Radius, RadiusType);
-
   void GenerateData();
 
 protected:
