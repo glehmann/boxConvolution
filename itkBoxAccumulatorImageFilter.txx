@@ -39,7 +39,7 @@ BoxAccumulatorImageFilter<TInputImage, TOutputImage>
 
   ProgressReporter progress(this, 0, this->GetOutput()->GetRequestedRegion().GetNumberOfPixels());
 
-  BoxAccumulateFunction<TInputImage, TOutputImage>(inputImage, outputImage, inputRegion, inputRegion, progress);
+  BoxAccumulateFunction<TInputImage, TOutputImage, typename Functor::Identity< OutputPixelType > >(inputImage, outputImage, inputRegion, inputRegion, progress);
 }
 
 } // namespace itk
