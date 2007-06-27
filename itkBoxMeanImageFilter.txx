@@ -139,7 +139,7 @@ BoxMeanImageFilter<TInputImage, TOutputImage>
   accImage->Allocate();
   typename AccumImageType::ConstPointer accImageConst = static_cast<typename AccumImageType::ConstPointer>(accImage);
 
-  BoxAccumulateFunction<TInputImage, AccumImageType, typename Functor::Identity< AccPixType > >(inputImage, accImage, 
+  BoxAccumulateFunction<TInputImage, AccumImageType>(inputImage, accImage, 
 						     accumRegion,
 						     accumRegion,
 						     progress);

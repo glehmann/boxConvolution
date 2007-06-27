@@ -14,7 +14,6 @@
 #include "itkBoxAccumulatorImageFilter.h"
 #include "itkShapedNeighborhoodIterator.h"
 #include "itkZeroFluxNeumannBoundaryCondition.h"
-#include "vcl_functional.h"
 
 namespace itk {
 
@@ -69,33 +68,7 @@ setConnectivityEarlyBox( TIterator* it, bool fullyConnected=false )
   return it;
 }
 
-
-
-namespace Functor {
-
-template<class TValue>
-class ITK_EXPORT Identity
-{
-public:
-  inline const TValue & operator()( const TValue & v )
-    {
-    return v;
-    }
-};
-
-template<class TValue>
-class ITK_EXPORT Square
-{
-public:
-  inline TValue operator()( const TValue & v )
-    {
-    return v*v;
-    }
-};
-
-}
-
-template <class TInputImage, class TOutputImage, class TFunctor >
+template <class TInputImage, class TOutputImage>
 void
 BoxAccumulateFunction(typename TInputImage::ConstPointer inputImage, 
 		      typename TOutputImage::Pointer outputImage, 
@@ -155,15 +128,13 @@ BoxAccumulateFunction(typename TInputImage::ConstPointer inputImage,
     Weights.push_back(w);
     }
 
-  TFunctor function;
-
   for (inIt.GoToBegin(), noutIt.GoToBegin(); !noutIt.IsAtEnd(); ++inIt, ++noutIt )
     {
     OutputPixelType Sum = 0;
     int k;
     for (k = 0, sIt = noutIt.Begin(); !sIt.IsAtEnd();++sIt, ++k)
       {
-      Sum += function( sIt.Get() ) * Weights[k];
+      Sum += sIt.Get() * Weights[k];
       }
     noutIt.SetCenterPixel(Sum + inIt.Get());
     progress.CompletedPixel();
