@@ -24,13 +24,13 @@ int main(int, char * argv[])
   typedef itk::BoxMeanImageFilter< IType, IType > BoxConvType;
   BoxConvType::Pointer boxConv = BoxConvType::New();
   boxConv->SetInput( reader->GetOutput() );
-  boxConv->SetRadius( 2 );
+  boxConv->SetRadius( 3 );
   
   typedef itk::MeanImageFilter< IType, IType > DirectConvType;
   DirectConvType::Pointer directConv = DirectConvType::New();
   directConv->SetInput( reader->GetOutput() );
   DirectConvType::InputSizeType radius;
-  radius.Fill( 2 );
+  radius.Fill( 3 );
   directConv->SetRadius( radius );
 
   typedef itk::BoxAccumulatorImageFilter< IType, AccType > BoxAccType;
