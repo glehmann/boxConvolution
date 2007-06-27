@@ -74,7 +74,7 @@ BoxMeanImageFilter<TInputImage, TOutputImage>
     }
 }
 
-#if 1
+#if 0
 template<class TInputImage, class TOutputImage>
 void
 BoxMeanImageFilter<TInputImage, TOutputImage>

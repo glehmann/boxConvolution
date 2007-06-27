@@ -208,7 +208,7 @@ BoxMeanCalculatorFunction(typename TInputImage::ConstPointer accImage,
     {
     kernelSize[i] = Radius[i] * 2 + 1;
     internalRadius[i] = Radius[i] + 1;
-    RegionLimit[i] = inputRegion.GetSize()[i] - RegionStart[i] - 1;
+    RegionLimit[i] = inputRegion.GetSize()[i] + RegionStart[i] - 1;
     }
 
   typedef typename itk::NumericTraits<OutputPixelType>::RealType AccPixType;
