@@ -116,9 +116,10 @@ BoxSigmaImageFilter<TInputImage, TOutputImage>
 ::ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread, int threadId) 
 {
 
-  ProgressReporter progress(this, 0, 3*outputRegionForThread.GetNumberOfPixels());
+  ProgressReporter progress(this, 0, 2*outputRegionForThread.GetNumberOfPixels());
   // Accumulate type is too small
-  typedef typename itk::NumericTraits<PixelType>::RealType AccPixType;
+  typedef typename itk::NumericTraits<PixelType>::RealType AccValueType;
+  typedef typename itk::Vector<AccValueType, 2> AccPixType;
   typedef typename itk::Image<AccPixType, TInputImage::ImageDimension> AccumImageType;
 
   typename TInputImage::SizeType internalRadius;
@@ -139,25 +140,12 @@ BoxSigmaImageFilter<TInputImage, TOutputImage>
   accImage->Allocate();
   typename AccumImageType::ConstPointer accImageConst = static_cast<typename AccumImageType::ConstPointer>(accImage);
 
-  BoxAccumulateFunction<TInputImage, AccumImageType, typename Functor::Identity< AccPixType > >(inputImage, accImage, 
+  BoxSquareAccumulateFunction<TInputImage, AccumImageType >(inputImage, accImage, 
 						     accumRegion,
 						     accumRegion,
 						     progress);
-
-
-  typename AccumImageType::Pointer accSquareImage = AccumImageType::New();
-  accSquareImage->SetRegions(accumRegion);
-  accSquareImage->Allocate();
-  typename AccumImageType::ConstPointer accSquareImageConst = static_cast<typename AccumImageType::ConstPointer>(accSquareImage);
-
-  BoxAccumulateFunction<TInputImage, AccumImageType, typename Functor::Square< AccPixType > >(inputImage, accSquareImage, 
-						     accumRegion,
-						     accumRegion,
-						     progress);
-
-
 //   writeIm<AccumImageType>(accImage, "/tmp/acc.nii.gz");
-  BoxSigmaCalculatorFunction<AccumImageType, TOutputImage>(accImageConst, accSquareImage, outputImage,
+  BoxSigmaCalculatorFunction<AccumImageType, TOutputImage>(accImageConst, outputImage,
 							  accumRegion,
 							  outputRegionForThread,
 							  m_Radius,

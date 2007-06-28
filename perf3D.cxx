@@ -5,7 +5,10 @@
 
 #include "itkBoxMeanImageFilter.h"
 #include "itkMeanImageFilter.h"
+#include "itkBoxSigmaImageFilter.h"
+#include "itkNoiseImageFilter.h"
 #include "itkTimeProbe.h"
+#include <iomanip>
 
 
 int main(int argc, char * argv[])
@@ -41,9 +44,19 @@ int main(int argc, char * argv[])
   directConv->SetInput( reader->GetOutput() );
   DirectConvType::InputSizeType radius;
 
-  std::cout << "Size" << "\t"
-            << "Direct" << "\t"
-            << "Box" << "\t"
+  typedef itk::BoxSigmaImageFilter< IType, AccType > BoxSigmaType;
+  BoxSigmaType::Pointer boxSigma = BoxSigmaType::New();
+  boxSigma->SetInput( reader->GetOutput() );
+  //itk::SimpleFilterWatcher watcher(filter, "filter");
+  typedef itk::NoiseImageFilter< IType, AccType > DirectSigmaType;
+  DirectSigmaType::Pointer directSigma = DirectSigmaType::New();
+  directSigma->SetInput( reader->GetOutput() );
+
+  std::cout << "Radius" << "\t"
+            << "DirectM" << "\t"
+            << "BoxM" << "\t"
+            << "DirectS" << "\t"
+            << "BoxS" << "\t"
             << std::endl;
 
   std::vector<int> Sizes;
@@ -59,9 +72,14 @@ int main(int argc, char * argv[])
     boxConv->SetRadius(R);
     radius.Fill(R);
     directConv->SetRadius(radius);
+    boxSigma->SetRadius(R);
+    directSigma->SetRadius(radius);
     
     itk::TimeProbe origtime;
     itk::TimeProbe boxtime;
+
+    itk::TimeProbe sorigtime;
+    itk::TimeProbe sboxtime;
 
     for( int i=0; i<2; i++ )
       {
@@ -75,10 +93,22 @@ int main(int argc, char * argv[])
       origtime.Stop();
       directConv->Modified();
 
+      sboxtime.Start();
+      boxSigma->Update();
+      sboxtime.Stop();
+      boxSigma->Modified();
+
+      sorigtime.Start();
+      directSigma->Update();
+      sorigtime.Stop();
+      directSigma->Modified();
+
       }
-    std::cout << R << "\t"
+    std::cout << std::setprecision(3) << R << "\t"
               << origtime.GetMeanTime() << "\t"
               << boxtime.GetMeanTime() << "\t"
+              << sorigtime.GetMeanTime() << "\t"
+              << sboxtime.GetMeanTime() << "\t"
               << std::endl;
 
     }

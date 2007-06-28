@@ -67,7 +67,7 @@ ENDIF(BUILD_WRAPPERS)
 
 IF(BUILD_TESTING)
 
-FOREACH(CurrentExe check check3D perf2D perf3D perf_threads)
+FOREACH(CurrentExe check check3D perf2D perf3D perf_threads check_sigma)
   ADD_EXECUTABLE(${CurrentExe} ${CurrentExe}.cxx)
   TARGET_LINK_LIBRARIES(${CurrentExe} ${Libraries})
 ENDFOREACH(CurrentExe)

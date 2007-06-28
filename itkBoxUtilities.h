@@ -100,7 +100,7 @@ BoxAccumulateFunction(typename TInputImage::ConstPointer inputImage,
   setConnectivityEarlyBox( &noutIt, true );
 
   ConstantBoundaryCondition<OutputImageType> oBC;
-  oBC.SetConstant(0);
+  oBC.SetConstant( NumericTraits< OutputPixelType >::Zero );
   noutIt.OverrideBoundaryCondition(&oBC);
   // This uses several iterators. An alternative and probably better
   // approach would be to copy the input to the output and convolve
@@ -356,7 +356,6 @@ BoxMeanCalculatorFunction(typename TInputImage::ConstPointer accImage,
 template <class TInputImage, class TOutputImage>
 void
 BoxSigmaCalculatorFunction(typename TInputImage::ConstPointer accImage, 
-			  typename TInputImage::ConstPointer accImage, 
 			  typename TOutputImage::Pointer outputImage, 
 			  typename TInputImage::RegionType inputRegion,
 			  typename TOutputImage::RegionType outputRegion,
@@ -373,6 +372,7 @@ BoxSigmaCalculatorFunction(typename TInputImage::ConstPointer accImage,
   typedef TOutputImage OutputImageType;
   typedef typename TOutputImage::PixelType OutputPixelType ;
   typedef typename TInputImage::PixelType InputPixelType ;
+  typedef typename InputPixelType::ValueType ValueType ;
    // use the face generator for speed
   typedef typename itk::NeighborhoodAlgorithm::ImageBoundaryFacesCalculator<InputImageType> FaceCalculatorType;
   typedef typename FaceCalculatorType::FaceListType FaceListType;
@@ -457,14 +457,18 @@ BoxSigmaCalculatorFunction(typename TInputImage::ConstPointer accImage,
       for (oIt.GoToBegin(); !oIt.IsAtEnd(); ++oIt)
         {
 	AccPixType Sum = 0;
+	AccPixType SquareSum = 0;
 	// check each corner
 	for (unsigned k = 0; k < CornerItVec.size(); k++)
 	  {
-	  Sum += Weights[k] * CornerItVec[k].Get();
+          const InputPixelType & i = CornerItVec[k].Get();
+	  Sum += Weights[k] * i[0];
+	  SquareSum += Weights[k] * i[1];
 	  // increment each corner iterator
 	  ++(CornerItVec[k]);
 	  }
-	oIt.Set(static_cast<OutputPixelType>(Sum/pixelscount));
+
+	oIt.Set(static_cast<OutputPixelType>( vcl_sqrt( ( SquareSum - Sum*Sum/pixelscount ) / ( pixelscount -1 ) ) ) );
         progress.CompletedPixel();
         }
       }
@@ -493,6 +497,7 @@ BoxSigmaCalculatorFunction(typename TInputImage::ConstPointer accImage,
         currentKernelRegion.Crop( inputRegion );
         long edgepixelscount = currentKernelRegion.GetNumberOfPixels();
 	AccPixType Sum = 0;
+	AccPixType SquareSum = 0;
 	// rules are : for each corner,
 	//               for each dimension
         //                  if dimension offset is positive -> this is
@@ -524,16 +529,102 @@ BoxSigmaCalculatorFunction(typename TInputImage::ConstPointer accImage,
 	    }
 	  if (IncludeCorner)
 	    {
-	    Sum += accImage->GetPixel(ThisCorner) * Weights[k];
+            const InputPixelType & i = accImage->GetPixel(ThisCorner);
+            Sum += Weights[k] * i[0];
+            SquareSum += Weights[k] * i[1];
 	    }
 	  }
 
-	oIt.Set(static_cast<OutputPixelType>(Sum/(AccPixType)edgepixelscount));
+	oIt.Set(static_cast<OutputPixelType>( vcl_sqrt( ( SquareSum - Sum*Sum/edgepixelscount ) / ( edgepixelscount -1 ) ) ) );
 	progress.CompletedPixel();
 	}
       }
     }
 }
+
+
+
+template <class TInputImage, class TOutputImage>
+void
+BoxSquareAccumulateFunction(typename TInputImage::ConstPointer inputImage, 
+		      typename TOutputImage::Pointer outputImage, 
+		      typename TInputImage::RegionType inputRegion,
+		      typename TOutputImage::RegionType outputRegion,
+		      ProgressReporter &progress)
+{
+  // typedefs
+  typedef TInputImage InputImageType;
+  typedef typename TInputImage::RegionType RegionType ;
+  typedef typename TInputImage::SizeType SizeType ;
+  typedef typename TInputImage::IndexType IndexType ;
+  typedef typename TInputImage::PixelType PixelType ;
+  typedef typename TInputImage::OffsetType OffsetType ;
+  typedef TOutputImage OutputImageType;
+  typedef typename TOutputImage::PixelType OutputPixelType ;
+  typedef typename OutputPixelType::ValueType ValueType ;
+  typedef typename TInputImage::PixelType InputPixelType ;
+  
+  typedef ImageRegionConstIterator<TInputImage> InputIterator;
+  typedef ImageRegionIterator<TOutputImage> OutputIterator;
+
+  typedef ShapedNeighborhoodIterator<TOutputImage> NOutputIterator;
+  InputIterator inIt( inputImage, inputRegion);
+  typename TInputImage::SizeType kernelRadius;
+  kernelRadius.Fill(1);
+
+  NOutputIterator noutIt( kernelRadius, outputImage, outputRegion);
+  // this iterator is fully connected
+  setConnectivityEarlyBox( &noutIt, true );
+
+  ConstantBoundaryCondition<OutputImageType> oBC;
+  oBC.SetConstant( NumericTraits< OutputPixelType >::Zero );
+  noutIt.OverrideBoundaryCondition(&oBC);
+  // This uses several iterators. An alternative and probably better
+  // approach would be to copy the input to the output and convolve
+  // with the following weights (in 2D)
+  //   -(dim - 1)  1
+  //       1       1
+  // The result of each convolution needs to get written back to the
+  // image being convolved so that the accumulation propogates
+  // This should be implementable with neighborhood operators.
+
+  std::vector<int> Weights;
+  typename NOutputIterator::ConstIterator sIt;
+  for( typename NOutputIterator::IndexListType::const_iterator idxIt = noutIt.GetActiveIndexList().begin();
+       idxIt != noutIt.GetActiveIndexList().end();
+       idxIt++ )
+    {
+    OffsetType offset = noutIt.GetOffset(*idxIt);
+    int w = -1;
+    for (unsigned k = 0; k < InputImageType::ImageDimension; k++)
+      {
+      if (offset[k] != 0)
+	w *= offset[k];
+      }
+//     std::cout << offset << "  " << w << std::endl;
+    Weights.push_back(w);
+    }
+
+  for (inIt.GoToBegin(), noutIt.GoToBegin(); !noutIt.IsAtEnd(); ++inIt, ++noutIt )
+    {
+    ValueType Sum = 0;
+    ValueType SquareSum = 0;
+    int k;
+    for (k = 0, sIt = noutIt.Begin(); !sIt.IsAtEnd();++sIt, ++k)
+      {
+      const OutputPixelType & v = sIt.Get();
+      Sum += v[0] * Weights[k];
+      SquareSum += v[1] * Weights[k];
+      }
+    OutputPixelType o;
+    const InputPixelType & i = inIt.Get();
+    o[0] = Sum + i;
+    o[1] = SquareSum + i*i;
+    noutIt.SetCenterPixel( o );
+    progress.CompletedPixel();
+    }
+}
+
 
 } //namespace itk
 

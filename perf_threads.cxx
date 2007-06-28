@@ -6,6 +6,8 @@
 #include <vector>
 #include "itkFlatStructuringElement.h"
 #include <iomanip>
+#include "itkBoxSigmaImageFilter.h"
+#include "itkNoiseImageFilter.h"
 
 int main(int, char * argv[])
 {
@@ -42,6 +44,16 @@ int main(int, char * argv[])
   mean->SetInput( acc->GetOutput() );
   mean->SetRadius( radius );
   
+  typedef itk::BoxSigmaImageFilter< IType, IType > BoxSigmaType;
+  BoxSigmaType::Pointer boxSigma = BoxSigmaType::New();
+  boxSigma->SetInput( reader->GetOutput() );
+  boxSigma->SetRadius( 3 );
+  
+  typedef itk::NoiseImageFilter< IType, IType > DirectSigmaType;
+  DirectSigmaType::Pointer directSigma = DirectSigmaType::New();
+  directSigma->SetInput( reader->GetOutput() );
+  directSigma->SetRadius( radius );
+
   
 /*  // write 
   typedef itk::ImageFileWriter< IType > WriterType;
@@ -52,9 +64,12 @@ int main(int, char * argv[])
   reader->Update();
   
   std::cout << "#nb" << "\t" 
-            << "Direct" << "\t"
-            << "Box" << "\t"
+            << "DirectM" << "\t"
+            << "BoxM" << "\t"
             << "Acc" << "\t"
+            << "Mean" << "\t"
+            << "DirectS" << "\t"
+            << "BoxS" << "\t"
             << std::endl;
 
   for( int t=1; t<=10; t++ )
@@ -63,11 +78,15 @@ int main(int, char * argv[])
     itk::TimeProbe boxtime;
     itk::TimeProbe acctime;
     itk::TimeProbe meantime;
+    itk::TimeProbe sorigtime;
+    itk::TimeProbe sboxtime;
 
     boxConv->SetNumberOfThreads( t );
     directConv->SetNumberOfThreads( t );
     acc->SetNumberOfThreads( t );
     mean->SetNumberOfThreads( t );
+    boxSigma->SetNumberOfThreads( t );
+    directSigma->SetNumberOfThreads( t );
     
     for( int i=0; i<10; i++ )
       {
@@ -90,6 +109,17 @@ int main(int, char * argv[])
       meantime.Start();
       mean->Update();
       meantime.Stop();
+
+      boxSigma->Modified();
+      sboxtime.Start();
+      boxSigma->Update();
+      sboxtime.Stop();
+
+      directSigma->Modified();
+      sorigtime.Start();
+      directSigma->Update();
+      sorigtime.Stop();
+
       }
       
     std::cout << std::setprecision(3) << t << "\t" 
@@ -97,6 +127,8 @@ int main(int, char * argv[])
               << boxtime.GetMeanTime() << "\t"
               << acctime.GetMeanTime() << "\t"
               << meantime.GetMeanTime() << "\t"
+              << sorigtime.GetMeanTime() << "\t"
+              << sboxtime.GetMeanTime() << "\t"
               << std::endl;
     }
   

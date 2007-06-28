@@ -220,10 +220,10 @@ fact it is also possible to apply the decomposition discussed in
 Section \ref{sect:MMdecomp} to median filters to achieve a closer
 approximation to circular kernels.
 
-\section{Mean and variance filters}
+\section{Mean and standard deviation filters}
 \label{sect:meanVar}
 A simplified version of the moving histogram approach can also be used
-to efficiently compute the mean or variance of an arbitrarily shaped
+to efficiently compute the mean or standard deviation of an arbitrarily shaped
 kernel. The histogram used for morphology and rank filters is a data
 structure that, once established for one pixel, can be easily updated
 to represent the kernel for a neighboring pixel. The data structure
@@ -241,7 +241,7 @@ in which each $i,j$ is replaced by the sum of voxels ``left'' and
 local neighborhood values. The mean of rectangles of any size may then
 be computed using accumulated values at the rectangle corners. Figures
 \ref{fig:accum} and \ref{fig:accumMean} illustrate the 2D case and the
-update formulas are provided in Equations \ref{eq:accum} and
+update formulas are provided in Equations \ref{eq:accum}, \ref{eq:accSum}, and
 \ref{eq:accumMean}.
 
 \begin{eqnarray}
@@ -252,10 +252,41 @@ b_{i,j} & = & \sum_{x \leq i, y \leq j} a_{x,y} \\ \nonumber
 where $b_{i,j}$ is the accumulator value at location $i,j$ and $a_{i,j}$ is the input image intensity at $i,j$.
 
 \begin{equation}
+\label{eq:accSum}
+S_{i,j} = b_{i+w/2,j+h/2} + b_{i-w/2,j-h/2} - b_{i-w/2,j+h/2} + b_{i+w/2,j-h/2}
+\end{equation}
+where $S_{i,j}$ is the sum of the pixel values in the neighborhood centered at $i,j$.
+
+\begin{equation}
 \label{eq:accumMean}
-m_{i,j} = \frac{1}{wh} (b_{i+w/2,j+h/2} + b_{i-w/2,j-h/2} - b_{i-w/2,j+h/2} + b_{i+w/2,j-h/2})
+m_{i,j} = \frac{1}{w.h}S_{i,j}
 \end{equation}
 where $m_{i,j}$ is the output of the mean filter at location $i,j$.
+
+Using the same strategy, the standard deviation can be efficiently computed.
+It requires an accumulator image of the squared pixels values, which can be
+efficiently computed at the same time than the accumulator image. The update
+formulas are provided in Equations \ref{eq:accum}, \ref{eq:accSum},
+\ref{eq:accum2}, \ref{eq:accSum2} and \ref{eq:accumSigma}.
+
+\begin{eqnarray}
+\label{eq:accum2}
+b2_{i,j} & = & \sum_{x \leq i, y \leq j} a_{x,y}^2 \\ \nonumber
+	& = & b2_{i,j-1} + b2_{i-1, j} + a_{i,j}^2 - b2_{i-1, j-1}
+\end{eqnarray}
+where $b2_{i,j}$ is the accumulator value at location $i,j$ for the square image, and $a_{i,j}$ is the input image intensity at $i,j$.
+
+\begin{equation}
+\label{eq:accSum2}
+S2_{i,j} = b2_{i+w/2,j+h/2} + b2_{i-w/2,j-h/2} - b2_{i-w/2,j+h/2} + b2_{i+w/2,j-h/2}
+\end{equation}
+where $S2_{i,j}$ is the sum of the squared pixel values in the neighborhood centered at $i,j$.
+
+\begin{equation}
+\label{eq:accumSigma}
+\sigma_{i,j} = \sqrt{\frac{S2_{i,j} - \frac{S_{i,j}^2}{w.h}}{w.h-1}}
+\end{equation}
+where $\sigma_{i,j}$ is the output of the standard deviation filter at location $i,j$.
 
 \begin{figure}[htbp]
 \centering
