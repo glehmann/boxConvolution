@@ -82,14 +82,20 @@ ENDIF(BUILD_TESTING)
 #any tests you can comment out or delete the following line.
 # ADD_TEST(Testname ExecutableToRun arg1 arg2 arg3)
 
-ADD_TEST(Test ${TEST_COMMAND}
+ADD_TEST(Mean ${TEST_COMMAND}
    check ${INPUT_IMAGE} out.png orig.png acc.nrrd rescaledAcc.png 3
    --compare out.png ${CMAKE_SOURCE_DIR}/images/test.png
    --compare acc.nrrd ${CMAKE_SOURCE_DIR}/images/acc.nrrd
    --compare rescaledAcc.png ${CMAKE_SOURCE_DIR}/images/rescaledAcc.png
 )
 
-ADD_TEST(Test3D ${TEST_COMMAND}
+ADD_TEST(Mean3D ${TEST_COMMAND}
    check3D ${CMAKE_SOURCE_DIR}/images/ESCells.img out3D.tif orig3D.tif acc3D.nrrd rescaledAcc3D.tif 3
    --compare out3D.tif ${CMAKE_SOURCE_DIR}/images/out3D.tif
 )
+
+ADD_TEST(Sigma ${TEST_COMMAND}
+   check_sigma ${INPUT_IMAGE} sigma.png sorig.png 3
+   --compare sigma.png ${CMAKE_SOURCE_DIR}/images/sigma.png
+)
+
