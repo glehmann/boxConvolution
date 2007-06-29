@@ -267,8 +267,7 @@ Using the same strategy, the standard deviation can be efficiently
 computed.  It requires an accumulator image of the squared pixels
 values, which can be efficiently computed at the same time as the
 original accumulator image. The update formulas are provided in
-Equations \ref{eq:accum}, \ref{eq:accSum},
-\ref{eq:accum2}, \ref{eq:accSum2} and \ref{eq:accumSigma}.
+Equations \ref{eq:accum2}, \ref{eq:accSum2} and \ref{eq:accumSigma}.
 
 \begin{eqnarray}
 \label{eq:accum2}
@@ -309,7 +308,7 @@ different sizes and shapes were needed and could be computed from the same accum
 The filters discusses in this article are contained in 3 packages --
 {\em consolidatedMorphology}, {\em fastRankMean} and {\em
 boxConvolution}. The most recent versions of these packages can be
-obtained from {\bf link to Gaetan's darcs repo}. All of the packages
+obtained from {\bf http://voxel.jouy.inra.fr/darcsweb/}. All of the packages
 include multithreaded filters and include many examples. Unless
 indicated otherwise, all filters will behave basically the same way as
 other kernel filters, requiring either a radius or a neighborhood to
