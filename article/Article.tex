@@ -127,7 +127,7 @@ approach is very efficient when 8 or 16 bit pixels are used because
 the histogram can be represented as an array, with place holders
 tracking the current maximum or minimum increasing performance. More
 sophisticated histogram representations are necessary for larger pixel
-types. Our implementation uses c++ maps. This is an extension to the
+types. Our implementation uses c++ maps, which is an extension to the
 original paper.
 
 This methodology reduces the complexity from $O(n^d)$ to $O(n^{d-1})$,
@@ -139,8 +139,8 @@ implementation.
 Morphological erosions and dilations are separable -- successive
 dilation by orthogonal lines is equivalent to dilation by a rectangle
 with sides equal to the line lengths. This means that any
-hyper-rectangular structuring element can be constructed using lines
-parallel to the image axes.
+hyper-rectangular structuring element can be constructed using several
+orthogonal lines, typically parallel to the axes.
 
 Approximations of more complex shapes, particularly circles and
 ellipses can constructed using a number of lines at evenly spaced
@@ -178,7 +178,7 @@ exists. This method was introduced in \cite{Gil1993,vanHerk1992a} and
 can compute an erosion or dilation in 3 operations per pixel,
 independent of structuring element length. \cite{Gil2000} recently
 reduced the cost to 1.5 pixels per pixel, but the procedure is more
-complicated and there are reports of no speedup in reality.
+complicated and there are reports of no speedup in practice.
 
 The original algorithms utilize forward and backward running maxima
 (for dilation) for the length of the structuring element from a pixel
@@ -193,10 +193,10 @@ element length. This is illustrated in Figure \ref{fig:vHGWmethod}
 \caption{The van Herk, Gil, Werman method.\label{fig:vHGWmethod}}
 \end{figure}
 
-A method published recently that offers improved performance
-\cite{Vandroogenbroeck2005Morphological} and the ability to perform a
-line opening directly (rather than using an erosion/dilation
-cascade). This method, known as {\em anchor morphology} has been
+A method known as {\em anchor morphology} has been published recently
+\cite{Vandroogenbroeck2005Morphological} that offers improved
+performance and the ability to perform a line opening directly (rather
+than using an erosion/dilation cascade). This method has been
 implemented in the filters discussed later in the article, but
 performance issues are not yet clear. The method employs histograms
 and therefore needs more complex data structures when applied to
@@ -263,10 +263,11 @@ m_{i,j} = \frac{1}{w.h}S_{i,j}
 \end{equation}
 where $m_{i,j}$ is the output of the mean filter at location $i,j$.
 
-Using the same strategy, the standard deviation can be efficiently computed.
-It requires an accumulator image of the squared pixels values, which can be
-efficiently computed at the same time than the accumulator image. The update
-formulas are provided in Equations \ref{eq:accum}, \ref{eq:accSum},
+Using the same strategy, the standard deviation can be efficiently
+computed.  It requires an accumulator image of the squared pixels
+values, which can be efficiently computed at the same time as the
+original accumulator image. The update formulas are provided in
+Equations \ref{eq:accum}, \ref{eq:accSum},
 \ref{eq:accum2}, \ref{eq:accSum2} and \ref{eq:accumSigma}.
 
 \begin{eqnarray}
@@ -291,7 +292,7 @@ where $\sigma_{i,j}$ is the output of the standard deviation filter at location 
 \begin{figure}[htbp]
 \centering
 \includegraphics[scale=0.5]{accum2D}
-\caption{Recursive computation of the accumulator image - value at $(i,j)$ computed using Equation \ref{eq:accum}.\label{fig:accum}}
+\caption{Recursive computation of the accumulator image - value at $(i,j)$ computed using Equation \ref{eq:accum}. The double hashed region is subtracted twice because it is included in both $b_{i,j-1}$ and $b_{i-1, j}$.\label{fig:accum}}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -302,7 +303,7 @@ where $\sigma_{i,j}$ is the output of the standard deviation filter at location 
 
 This approach to convolution has been used recently in face detection
 applications \cite{Viola2004}, where rectangular filters of many
-different sizes and shapes were needed.
+different sizes and shapes were needed and could be computed from the same accumulation image.
 
 \section{ITK implementation}
 The filters discusses in this article are contained in 3 packages --
@@ -341,7 +342,15 @@ ANCHOR} for the traditional ITK implementation, the moving histogram
 algorithm, the van Herk, Gil, Werman algorithm and the anchor
 algorithm respectively. The VHGW and ANCHOR algorithms can only be
 used for Box and Poly structuring elements. VHGW is more thoroughly
-tested.
+tested. This HISTO algorithm produces the identical results to BASIC,
+and is always faster. It is the default and should be used if you need
+precisely defined, non rectangular, structuring elements. If a Box
+structuring element is needed then VHGW or ANCHOR should be used, as
+they offer the best performance and are exact in that case. Poly
+structuring elements are approximations of circles that will offer
+improved performance with VHGW or ANCHOR algorithms, but the user will
+need to consider whether the approximation is suitable for the
+application in question.
 
 The availability of line morphology operations means that new
 operations, such as ``union of openings'' can be implemented easily.
@@ -354,7 +363,13 @@ filter -- an fast approximation to a real rank filter as discussed in
 Section \ref{sect:rank}. There are also a number of filters that
 accept a mask input and return the rank or mean value of the
 intersection of kernel and mask. These are experimental and haven't
-been thoroughly tested.
+been thoroughly tested. The filters are {\em itkRankImageFilter,
+itkMovingWindowMeanImageFilter, itkFastApproxRankImageFilter,
+itkFastApproxMaskRankImageFilter} and {\em
+itkMaskedRankImageFilter}. itkRankImageFilter implements arbitary
+shaped kernels, itkFastApproxRankImageFilter implements the separable
+approximation and itkMovingWindowMeanImageFilter implements an
+arbitary shaped kernel mean.
 
 \subsection{Rectangular convolution -- boxConvolution}
 The {\em boxConvolution} uses the accumulation method described in
@@ -362,51 +377,133 @@ Section \ref{sect:meanVar} to implement rectangular mean and variance
 computations. The filters implement different boundary conditions to
 {\em itkMeanImageFilter}, with the mean of the kernel inside the image
 being computed. The filters in this package are multithreaded and deal
-with arbitary dimensions.
+with arbitary dimensions. The current filters do not support the mode
+of operation used in face recognition application in which an
+accumulation image is repeatedly ``queried'' for mean values of
+various sized kernels. However introducing such a capability is
+relatively easy.
 
 \section{Performance}
 \subsection{Morpholgy}
 
 
 \subsection{Rank and Mean filters}
+Relative times for sliding window median and mean filters and
+separable median filters are shown in Table \ref{tab:perfRank}. The
+predicted linear complexity is observed for the sliding window
+approaches (complexity of direct approach is $O(n^2)$ in 2D, reduced
+to $O(n)$ by using the sliding window. The separable median exhibits a
+runtime independent of kernel size, as expected.
+\begin{table}[htbp]
+\centering
+\begin{tabular}{cccccc}
+\hline
+Size  &  Direct Median &  Sliding Median & Separable Median & Direct Mean & Sliding Mean\\
+1     &   0.0352 & 0.0341 & 0.0378 & 0.0171 & 0.0229\\
+5     &   0.409  & 0.0823  & 0.0201 & 0.24  &  0.0601 \\
+10    &   1.03   & 0.131 & 0.0193 & 0.803 &  0.0569 \\
+15    &   2.82   & 0.106  & 0.0192 & 2.13  &  0.0819 \\
+20    &   5.85   & 0.138  & 0.0358 & 4.76  &  0.106 \\
+40    &   39.7   & 0.2563  & 0.0198 & 36.6  &  0.203 \\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for median and mean filters using direct and sliding window implementations applied to the $256 \times 256$ cthead image on a 1.8GHz AMD Athlon, 512KB cache. The separable median is an approximation and therefore doesn't produce the same result as the direct or sliding algorithms.\label{tab:perfRank}}
+\end{table}
 
 \subsection{Box Convolution}
 The relative times for optimized and standard convolution are shown in
 Table \ref{tab:perfBoxConv}, and demonstrate significantly improved
-performance for kernel radii greater than 2. The times indicate the
+performance for kernel radii greater than 1. The times support the
 theoretical prediction that the complexity of the algorithm is
 independent of kernel size.
 \begin{table}[htbp]
 \centering
-\begin{tabular}{ccc}
+\begin{tabular}{ccccc}
 \hline
-Size  &  Direct &  Box \\
-1  &     0.014205    &    0.0256313 \\
-2  &     0.0355665   &    0.0257389 \\
-3  &     0.0507895   &    0.0194342 \\
-4  &     0.0745054   &    0.0152253 \\
-5  &     0.124225    &    0.0149731 \\
-6  &     0.187713    &    0.0149678 \\
-7  &     0.27351     &    0.0152494 \\
-8  &     0.411708    &    0.0155574 \\
-9  &     0.518938    &    0.0156469 \\
-10 &     0.682868    &    0.0158462 \\
-15  &    2.02712     &    0.0165146 \\
-20  &    4.46925     &    0.0176763 \\
-25  &    8.43348      & 0.0182798 \\
+Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
+1    &   0.0142 & 0.0226 & 0.0176 & 0.0332 \\
+2    &   0.0279 & 0.0176 & 0.0294 & 0.0258 \\
+3    &   0.0425 & 0.013  & 0.0447 & 0.0193 \\
+4    &   0.077  & 0.0132 & 0.0803 & 0.0195 \\
+5    &   0.128  & 0.0132 & 0.129  & 0.0195 \\
+6    &   0.195  & 0.0134 & 0.195  & 0.0198 \\
+7    &   0.275  & 0.0136 & 0.283  & 0.0198 \\
+8    &   0.392  & 0.0148 & 0.405  & 0.0204 \\
+9    &   0.54   & 0.014  & 0.548  & 0.0201 \\
+10   &   0.706  & 0.0139 & 0.713  & 0.0202 \\
+15   &   2.12   & 0.0158 & 2.18   & 0.021 \\
+20   &   4.62   & 0.0157 & 4.76   & 0.0217 \\
+25   &   8.63   & 0.0164 & 8.91   & 0.0222 \\
 \hline
 \hline
 \end{tabular}
-\caption{Execution times for direct and box convolution implementations applied to the $256 \times 256$ cthead image on a ??.\label{tab:perfBoxConv}}
+\caption{Execution times in seconds for mean and standard deviation using direct and box convolution implementations applied to the $256 \times 256$ cthead image on a 1.8GHz AMD Athlon, 512KB cache.\label{tab:perfBoxConv}}
 \end{table}
+\subsection{Timing notes}
+You may have noticed that the optimized filters of radius 1 seem to
+regularly perform slower than their larger counterparts. We can think
+of no reason for this. The algorithms that have kernel size
+independent complexity should not be slower for small kernels than
+large ones because the only difference occurs at borders and when the
+sliding window is being created, and both situations favour small
+kernels. We can only guess that there are caching issues involved.
+
+\section{Implementation Notes}
+A lot of effort has been spent implementing and optimizing these filters 
+while attempting to maintain good ITK style. This section summarizes some observations
+and experiences:
+\subsection{Moving histograms}
+The most obvious way of implementing moving histograms involves
+neighborhood iterators.  However the resulting performance wasn't good
+-- it appears that neighborhood iterator complexity is proportional to
+radius rather than the number of active neighbors. A method using
+lists of offsets combined with image Get/SetPixel methods approach was
+used instead.
+
+The original paper recommended moving the window in a zig-zag pattern, i.e horizontally 
+across a the first row, down a step to the second row and then back, but this involves
+accessing data in a reverse raster order which can potentially reduce cache performance.
+An alternative has been implemented that always moves the window in forward raster direction,
+at the cost of additional histogram copies, has been implemented and exhibits improved
+performance for large images. Differences for small images weren't detectable.
+
+\subsection{16 bit data types}
+Histograms for 16 bit data types can be implemented using arrays or maps. One would
+expect arrays to offer a simpler and therefore faster implementation, but our results
+have been mixed. Presumably the performance depends significantly on voxel statistics.
+
+\subsection{Line Operations}
+The van Herk/Gil and Werman and anchor methods operate on image transects, potentially
+at any angle. The transect data needs to be extracted from the image and the processed
+transect written back, with successive parallel transects being processed. 
+Existing iterators don't do this particularly efficiently, so image Get/SetPixel operations 
+are being used. This approach isn't ideal either and needs to be worked on. In general
+there is no need for boundary checks because the intersection between transect and image region
+is calculated, so a potentially random access method without boundary checks would be ideal.
+
+Building dimension independent code also adds complexity to this filter which can be avoided in
+dimension specific implementations. The process of sweeping the transect across the image region
+is much more complex (and therefore slower) when written in a dimension independent fashion.
+
+The standard ITK threading approach isn't ideal for this style of filtering either -- a better 
+option would be splitting the image based on transects instead of blocks. Obviously this
+sort of change isn't practical.
+
+\subsection{Refactoring}
+The three packages do share some components, and some refactoring is
+called for. This most widely used components are histograms and
+sliding window infrastructure, which need to be consolidated.
 
 \section{Comments and Conclusions}
-
-\section{Acknowledgments}
-We thank Dr Pierre Adenot and MIMA2 confocal facilities
-(\url{http://mima2.jouy.inra.fr}) for providing the 3D test image.
-
-
+This article has provided background theory for and implementations of
+a number of important approaches to kernel based filtering. These
+methods significantly reduce complexity and execution time, by some
+orders of magnitude in many cases. These approaches are all well
+established in the literature but weren't available in
+ITK. Availability of filtering algorithms which are always fast,
+irrespective of the kernel size, can make much simpler approaches to
+many problems practical.
 
 \appendix
 

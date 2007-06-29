@@ -4,7 +4,6 @@
 #include "itkMeanImageFilter.h"
 #include "itkTimeProbe.h"
 #include <vector>
-#include "itkFlatStructuringElement.h"
 #include <iomanip>
 #include "itkBoxSigmaImageFilter.h"
 #include "itkNoiseImageFilter.h"

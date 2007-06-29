@@ -143,7 +143,6 @@ BoxMeanImageFilter<TInputImage, TOutputImage>
 						     accumRegion,
 						     accumRegion,
 						     progress);
-//   writeIm<AccumImageType>(accImage, "/tmp/acc.nii.gz");
   BoxMeanCalculatorFunction<AccumImageType, TOutputImage>(accImageConst, outputImage,
 							  accumRegion,
 							  outputRegionForThread,
