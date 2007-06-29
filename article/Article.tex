@@ -113,7 +113,7 @@ elements while the second can be applied to line structuring elements.
 \subsection{Arbitrary structuring elements}
 \label{sect:MMmovingHist}
 The method described in \cite{Vandroogenbroeck96.3} relies on the
-simple concept of an updatable histogram, and is often described as a
+simple concept of an up-datable histogram, and is often described as a
 ``moving histogram'' approach. A histogram is computed for a kernel
 located at the first voxel. The histogram at the neighboring voxel can
 then be computed by including newly included voxels and removing newly
@@ -310,7 +310,10 @@ The filters discusses in this article are contained in 3 packages --
 {\em consolidatedMorphology}, {\em fastRankMean} and {\em
 boxConvolution}. The most recent versions of these packages can be
 obtained from {\bf link to Gaetan's darcs repo}. All of the packages
-include multithreaded filters and include many examples.
+include multithreaded filters and include many examples. Unless
+indicated otherwise, all filters will behave basically the same way as
+other kernel filters, requiring either a radius or a neighborhood to
+be specified.
 
 \subsection{Morphology filters -- consolidatedMorphology}
 An earlier version of the {\em consolidatedMorphology} package has
@@ -377,7 +380,7 @@ Section \ref{sect:meanVar} to implement rectangular mean and variance
 computations. The filters implement different boundary conditions to
 {\em itkMeanImageFilter}, with the mean of the kernel inside the image
 being computed. The filters in this package are multithreaded and deal
-with arbitary dimensions. The current filters do not support the mode
+with arbitrary dimensions. The current filters do not support the mode
 of operation used in face recognition application in which an
 accumulation image is repeatedly ``queried'' for mean values of
 various sized kernels. However introducing such a capability is
