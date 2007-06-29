@@ -387,6 +387,33 @@ relatively easy.
 
 \section{Performance}
 \subsection{Morpholgy}
+\begin{table}[htbp]
+\centering
+\begin{tabular}{cccc}
+\hline
+Radius & Histogram & vanHerk/Gil-Weman & Anchor \\
+1    &   0.0295  & 0.0228  & 0.033 \\
+2    &   0.0219  & 0.0126  & 0.0187 \\
+3    &   0.028   & 0.0128  & 0.0167 \\
+4    &   0.0339  & 0.0262  & 0.0379 \\ 
+5    &   0.0403  & 0.0264  & 0.0363 \\
+6    &   0.046   & 0.0265  & 0.038 \\
+7    &   0.052   & 0.027   & 0.0343 \\
+8    &   0.0637  & 0.0275  & 0.0344 \\
+9    &   0.0665  & 0.0387  & 0.0599 \\
+10   &   0.117   & 0.0641  & 0.142 \\
+15   &   0.103   & 0.0385  & 0.0455 \\
+20   &   0.133   & 0.0409  & 0.0445 \\
+25   &   0.164   & 0.0399  & 0.044 \\
+30   &   0.199   & 0.0403  & 0.0427 \\
+40   &   0.263   & 0.0405  & 0.0425 \\
+50   &   0.329   & 0.0403  & 0.043 \\
+100  &   0.68    & 0.0404  &  0.0472 \\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for dilation by circles using histogram, and polygon approximation based implementations applied to the $256 \times 256$ cthead image on a 1.8GHz AMD Athlon, 512KB cache. The polygon approximations use the default number of lines (a maximum of 6 when radius is greater than 8.\label{tab:perfPoly}}
+\end{table}
 
 
 \subsection{Rank and Mean filters}
