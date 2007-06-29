@@ -308,8 +308,13 @@ different sizes and shapes were needed and could be computed from the same accum
 The filters discusses in this article are contained in 3 packages --
 {\em consolidatedMorphology}, {\em fastRankMean} and {\em
 boxConvolution}. The most recent versions of these packages can be
-obtained from {\bf http://voxel.jouy.inra.fr/darcsweb/}. All of the packages
-include multithreaded filters and include many examples. Unless
+obtained from \url{http://voxel.jouy.inra.fr/darcsweb/}\footnote{
+The most recent versions can be obtained using darcs \cite{DarcsWebSite}
+with the command {\em darcs get http://voxel.jouy.inra.fr/\\darcs/contrib-itk/package},
+where {\em package} must be replace by {\em consolidatedMorphology},
+{\em fastRankMean} or {\em boxConvolution}.}.
+All of the packages
+include multithreaded filters and include many examples and tests. Unless
 indicated otherwise, all filters will behave basically the same way as
 other kernel filters, requiring either a radius or a neighborhood to
 be specified.
@@ -385,7 +390,18 @@ accumulation image is repeatedly ``queried'' for mean values of
 various sized kernels. However introducing such a capability is
 relatively easy.
 
+\subsection{Extended languages support}
+
+All the new filters provided are wrapped using WrapITK's external projects
+\cite{WrapITK} and have been successfully tested with python.
+
 \section{Performance}
+
+All the execution times in this section are measured on a computer with four
+Intel\textregistered Xeon\textregistered CPU cores at 2.33GHz with 4MB cache,
+running CentOS 4.4 64 bits. Unless precised in the description, the tests are
+forced to run on a single core.
+
 \subsection{Morpholgy}
 \begin{table}[htbp]
 \centering
@@ -524,6 +540,10 @@ The three packages do share some components, and some refactoring is
 called for. This most widely used components are histograms and
 sliding window infrastructure, which need to be consolidated.
 
+All the kernel based filters in ITK would also benefit to hinerit a common
+super class which manage the neighborhood size and/or the kernel, and which
+provide the infrastructure for the separable operations.
+
 \section{Comments and Conclusions}
 This article has provided background theory for and implementations of
 a number of important approaches to kernel based filtering. These
@@ -533,6 +553,10 @@ established in the literature but weren't available in
 ITK. Availability of filtering algorithms which are always fast,
 irrespective of the kernel size, can make much simpler approaches to
 many problems practical.
+
+\section{Acknowledgments}
+We thank Dr Pierre Adenot and MIMA2 confocal facilities
+(\url{http://mima2.jouy.inra.fr}) for providing the 3D test image.
 
 \appendix
 
