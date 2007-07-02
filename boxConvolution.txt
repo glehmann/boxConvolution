@@ -29,6 +29,11 @@ Radius	DirectM	BoxM	DirectS	BoxS
 20	80.1	0.936	91.8	1.64	
 25	131	0.939	149	1.64	
 perf3D
+Radius  DirectM BoxM    DirectS BoxS
+1 1.45  1.33  1.78  1.81
+2 9.55  1.41  10.3  1.87
+3 34.7  1.5 36.4  1.95
+4 89.7  1.55  91.8  1.95
 perf_threads small
 #nb	DirectM	BoxM	Acc	Mean	DirectS	BoxS	
 1	0.025	0.00795	0.00541	0.00284	0.0302	0.0129	
