@@ -25,7 +25,7 @@ perfMedianB
 20	0.93	0.00925	0.0444
 40	6.21	0.00936	0.0899
 perfMedianInt
-radius 	  Traditional time 	 Huang time
+#radius 	  Traditional time 	 Huang time
 1	0.0064	0.0171
 5	0.0392	0.0359
 10	0.165	0.0557
