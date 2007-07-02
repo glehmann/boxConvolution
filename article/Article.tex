@@ -69,7 +69,7 @@ methods and introduces their ITK implementations.
 
 \section{Introduction}
 A kernel based filtering process replaces the pixel at the kernel
-origin with the result of applying a function to all pixels defined by
+origin with the result of a function of all pixels defined by
 the kernel. Many useful filters, including edge detection and gradient
 filters, smoothing filters and rank and morphology filters fall into
 this category. Direct implementations of such filters typically
@@ -124,11 +124,12 @@ number of changes should be selected as the direction for sweeping the
 kernel across the image. The erosion or dilation at each location is
 computed by selecting the minimum or maximum from the histogram. This
 approach is very efficient when 8 or 16 bit pixels are used because
-the histogram can be represented as an array, with place holders
-tracking the current maximum or minimum increasing performance. More
-sophisticated histogram representations are necessary for larger pixel
-types. Our implementation uses c++ maps, which is an extension to the
-original paper.
+the histogram can be represented as an array and the histogram updated
+by incrementing or decrementing the appropriate bins. Using place
+holders to track the current maximum or minimum increases
+performance. More sophisticated histogram representations are
+necessary for larger pixel types. Our implementation uses c++ maps,
+which is an extension to the original paper.
 
 This methodology reduces the complexity from $O(n^d)$ to $O(n^{d-1})$,
 while keeping the structuring element identical to the direct
@@ -142,7 +143,7 @@ with sides equal to the line lengths. This means that any
 hyper-rectangular structuring element can be constructed using several
 orthogonal lines, typically parallel to the axes.
 
-Approximations of more complex shapes, particularly circles and
+Approximations of more complex shapes, notably circles and
 ellipses can constructed using a number of lines at evenly spaced
 angles \cite{Adams93}. It is difficult to create a structuring element
 with a precisely defined radius using this method because line
@@ -306,7 +307,7 @@ where $\sigma_{i,j}$ is the output of the standard deviation filter at location 
 \begin{figure}[htbp]
 \centering
 \includegraphics[scale=0.5]{accum2D}
-\caption{Recursive computation of the accumulator image - value at $(i,j)$ computed using Equation \ref{eq:accum}. The double hashed region is subtracted twice because it is included in both $b_{i,j-1}$ and $b_{i-1, j}$.\label{fig:accum}}
+\caption{Recursive computation of the accumulator image - value at $(i,j)$ computed using Equation \ref{eq:accum}. The double hashed region is subtracted because it is included in both $b_{i,j-1}$ and $b_{i-1, j}$.\label{fig:accum}}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -354,7 +355,7 @@ FlatStructuringElement} to describe, arbitary and decomposable
 structuring elements. It provides the following methods to create
 structuring elements with different characteristics:
 \begin{itemize}
-  \item \verb$Ball()$ generate a ball structuring element. It takes the 
+  \item \verb$Ball()$ generate a ball structuring element (a circle in 2D). It takes the 
 	radius of the structuring element as parameter.
   \item \verb$Box()$ produces a box structuring element. It takes the radius 
 	of the structuring element as parameter.
@@ -374,7 +375,7 @@ ANCHOR}, for the traditional ITK implementation, the moving histogram
 algorithm, the van Herk, Gil, Werman algorithm and the anchor
 algorithm respectively. The VHGW and ANCHOR algorithms can only be
 used for Box and Poly structuring elements. VHGW is more thoroughly
-tested. This HISTO algorithm produces the identical results to BASIC,
+tested. The HISTO algorithm produces the identical results to BASIC,
 and is always faster. It is the default and should be used if you need
 precisely defined, non rectangular, structuring elements. If a Box
 structuring element is needed then VHGW or ANCHOR should be used, as
