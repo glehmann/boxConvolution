@@ -403,33 +403,17 @@ running CentOS 4.4 64 bits. Unless specified in the description, the tests are
 forced to run on a single core.
 
 \subsection{Morpholgy}
-\begin{table}[htbp]
-\centering
-\begin{tabular}{cccc}
-\hline
-Radius & Histogram & vanHerk/Gil-Weman & Anchor \\
-1    &   0.0295  & 0.0228  & 0.033 \\
-2    &   0.0219  & 0.0126  & 0.0187 \\
-3    &   0.028   & 0.0128  & 0.0167 \\
-4    &   0.0339  & 0.0262  & 0.0379 \\ 
-5    &   0.0403  & 0.0264  & 0.0363 \\
-6    &   0.046   & 0.0265  & 0.038 \\
-7    &   0.052   & 0.027   & 0.0343 \\
-8    &   0.0637  & 0.0275  & 0.0344 \\
-9    &   0.0665  & 0.0387  & 0.0599 \\
-10   &   0.117   & 0.0641  & 0.142 \\
-15   &   0.103   & 0.0385  & 0.0455 \\
-20   &   0.133   & 0.0409  & 0.0445 \\
-25   &   0.164   & 0.0399  & 0.044 \\
-30   &   0.199   & 0.0403  & 0.0427 \\
-40   &   0.263   & 0.0405  & 0.0425 \\
-50   &   0.329   & 0.0403  & 0.043 \\
-100  &   0.68    & 0.0404  &  0.0472 \\
-\hline
-\hline
-\end{tabular}
-\caption{Execution times in seconds for dilation by circles using histogram, and polygon approximation based implementations applied to the $256 \times 256$ cthead image on a 1.8GHz AMD Athlon, 512KB cache. The polygon approximations use the default number of lines (a maximum of 6 when radius is greater than 8.\label{tab:perfPoly}}
-\end{table}
+
+Execution times for the dilation, the opening, and the gradient transform are shown in
+Tables \ref{tab:perfDilation}, \ref{tab:perfOpening} and \ref{tab:perfGradient}, and in
+Figure \ref{fig:consolidatedMorphology-perf}. The predicted linear complexity for the number
+of neighbors is observed for the basic algorithm, as well as the constant complexity of the
+van Herk / Gil Werman and the anchor algorithm. The linear complexity for the number of
+pixels added and removed per translation is observed for the moving histogram algorithm,
+as expected.
+
+A good threading support is observed for all the implementations, as shown in Table
+\ref{tab:perfThreads} and Figure \ref{fig:consolidatedMorphology-perf}.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -438,8 +422,15 @@ Radius & Histogram & vanHerk/Gil-Weman & Anchor \\
 \subfigure[Gradient]{\includegraphics[scale=0.62]{consolidatedMorphology-perf2D-gradient-small}}
 \subfigure[Threads]{\includegraphics[scale=0.62]{consolidatedMorphology-perf_threads}}
 \subfigure[Number of neighbors]{\includegraphics[scale=0.62]{consolidatedMorphology-perf_nb_of_neighbors}}
-\subfigure[Image size]{\includegraphics[scale=0.62]{consolidatedMorphology-perf_image_size}}
-\caption{TODO}
+\subfigure[Polygon]{\includegraphics[scale=0.62]{consolidatedMorphology-perf2Dpoly}}
+\caption{Execution times with a box structuring element of increasing size for different algorithms of dilation (a),
+opening (b) and gradient (c).
+Execution times with and increasing number fo threads (d).
+Execution times with an increasing number of neighbors in a box structuring of constant radius (e).
+Execution times with a polygon structuring element. The polygon approximations use the default number of lines (a maximum of 6 when radius is greater than 8 (f).\label{fig:consolidatedMorphology-perf}
+Results are reported in Tables \ref{tab:perfDilation}, \ref{tab:perfOpening}, \ref{tab:perfGradient},
+\ref{tab:perfThreads} and \ref{tab:perf2Dpoly}.
+}
 \end{center}
 \end{figure}
 
@@ -450,52 +441,40 @@ predicted linear complexity is observed for the sliding window
 approaches (complexity of direct approach is $O(n^2)$ in 2D, reduced
 to $O(n)$ by using the sliding window. The separable median exhibits a
 runtime independent of kernel size, as expected.
-\begin{table}[htbp]
-\centering
-\begin{tabular}{cccccc}
-\hline
-Size  &  Direct Median &  Sliding Median & Separable Median & Direct Mean & Sliding Mean\\
-1     &   0.0352 & 0.0341 & 0.0378 & 0.0171 & 0.0229\\
-5     &   0.409  & 0.0823  & 0.0201 & 0.24  &  0.0601 \\
-10    &   1.03   & 0.131 & 0.0193 & 0.803 &  0.0569 \\
-15    &   2.82   & 0.106  & 0.0192 & 2.13  &  0.0819 \\
-20    &   5.85   & 0.138  & 0.0358 & 4.76  &  0.106 \\
-40    &   39.7   & 0.2563  & 0.0198 & 36.6  &  0.203 \\
-\hline
-\hline
-\end{tabular}
-\caption{Execution times in seconds for median and mean filters using direct and sliding window implementations applied to the $256 \times 256$ cthead image on a 1.8GHz AMD Athlon, 512KB cache. The separable median is an approximation and therefore doesn't produce the same result as the direct or sliding algorithms.\label{tab:perfRank}}
-\end{table}
+
+\begin{figure}[htbp]
+\begin{center}
+\subfigure[Mean]{\includegraphics[scale=0.62]{fastRankMean-perfMean}}
+\subfigure[Median]{\includegraphics[scale=0.62]{fastRankMean-perfMedian}}
+\caption{TODO}
+\end{center}
+\end{figure}
+
 
 \subsection{Box Convolution}
 The relative times for optimized and standard convolution are shown in
-Table \ref{tab:perfBoxConv}, and demonstrate significantly improved
+Table \ref{tab:perfBoxConv} and Figure \ref{fig:perfBoxConv}, and demonstrate significantly improved
 performance for kernel radii greater than 1. The times support the
 theoretical prediction that the complexity of the algorithm is
 independent of kernel size.
-\begin{table}[htbp]
-\centering
-\begin{tabular}{ccccc}
-\hline
-Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
-1    &   0.0142 & 0.0226 & 0.0176 & 0.0332 \\
-2    &   0.0279 & 0.0176 & 0.0294 & 0.0258 \\
-3    &   0.0425 & 0.013  & 0.0447 & 0.0193 \\
-4    &   0.077  & 0.0132 & 0.0803 & 0.0195 \\
-5    &   0.128  & 0.0132 & 0.129  & 0.0195 \\
-6    &   0.195  & 0.0134 & 0.195  & 0.0198 \\
-7    &   0.275  & 0.0136 & 0.283  & 0.0198 \\
-8    &   0.392  & 0.0148 & 0.405  & 0.0204 \\
-9    &   0.54   & 0.014  & 0.548  & 0.0201 \\
-10   &   0.706  & 0.0139 & 0.713  & 0.0202 \\
-15   &   2.12   & 0.0158 & 2.18   & 0.021 \\
-20   &   4.62   & 0.0157 & 4.76   & 0.0217 \\
-25   &   8.63   & 0.0164 & 8.91   & 0.0222 \\
-\hline
-\hline
-\end{tabular}
-\caption{Execution times in seconds for mean and standard deviation using direct and box convolution implementations applied to the $256 \times 256$ cthead image on a 1.8GHz AMD Athlon, 512KB cache.\label{tab:perfBoxConv}}
-\end{table}
+
+A good threading support is observed for all the implementations, as shown in Table
+\ref{tab:perfBoxConv-threads} and Figure \ref{fig:perfBoxConv}.
+
+
+\begin{figure}[htbp]
+\begin{center}
+\subfigure[Neighborhood size]{\includegraphics[scale=0.62]{boxConvolution-perf2D-large}}
+\subfigure[Threads]{\includegraphics[scale=0.62]{boxConvolution-perf_threads-large}}
+\caption{Execution times for and increasing kernel size (a), and an increasing number of threads (b).
+\label{fig:perfBoxConv}
+Results are reported in Table \ref{tab:perfBoxConv}}
+\end{center}
+\end{figure}
+
+
+
+
 \subsection{Timing notes}
 You may have noticed that the optimized filters of radius 1 seem to
 regularly perform slower than their larger counterparts. We can think
@@ -571,7 +550,238 @@ We thank Dr Pierre Adenot and MIMA2 confocal facilities
 We are grateful to the INRA MIGALE bioinformatics platform
 (\url{http://migale.jouy.inra.fr}) for providing the computational resources
 used for the timing tests.
+
 \appendix
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccccc}
+\hline
+Radius	&	Basic	&	Separable	&	Histogram	&	Separable histogram	&	Anchor	&	van Herk / Gil Werman	\\
+\hline
+1	&	0.00477	&	0.00491	&	0.013	&	0.012	&	0.0144	&	0.00725	\\
+2	&	0.0114	&	0.0101	&	0.0161	&	0.0119	&	0.0135	&	0.00743	\\
+3	&	0.024	&	0.0146	&	0.0193	&	0.0116	&	0.0129	&	0.00794	\\
+4	&	0.0444	&	0.0192	&	0.0231	&	0.0114	&	0.0126	&	0.00755	\\
+5	&	0.0714	&	0.0247	&	0.0261	&	0.0114	&	0.0121	&	0.0074	\\
+6	&	0.107	&	0.0299	&	0.0313	&	0.0116	&	0.0127	&	0.00771	\\
+7	&	0.153	&	0.034	&	0.0358	&	0.0113	&	0.0121	&	0.00859	\\
+8	&	0.211	&	0.0407	&	0.038	&	0.0112	&	0.0121	&	0.00773	\\
+9	&	0.281	&	0.0442	&	0.0434	&	0.0114	&	0.012	&	0.00779	\\
+10	&	0.365	&	0.0486	&	0.0446	&	0.0111	&	0.0118	&	0.00763	\\
+15	&	1.03	&	0.074	&	0.0604	&	0.0115	&	0.0116	&	0.00794	\\
+20	&	2.23	&	0.104	&	0.079	&	0.0113	&	0.0113	&	0.00762	\\
+25	&	4.11	&	0.129	&	0.0968	&	0.0114	&	0.0116	&	0.0079	\\
+30	&	6.82	&	0.154	&	0.111	&	0.0114	&	0.0115	&	0.00781	\\
+40	&	15.4	&	0.214	&	0.153	&	0.0116	&	0.0116	&	0.00785	\\
+50	&	29.3	&	0.285	&	0.19	&	0.0119	&	0.0117	&	0.00804	\\
+100	&	226	&	0.767	&	0.355	&	0.0129	&	0.0117	&	0.00809	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for dilation by boxes using several algorithm implementations applied to the $256 \times 256$ cthead image.\label{tab:perfDilation}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccc}
+\hline
+Radius	&	Basic	&	Histogram	&	Anchor	&	van Herk / Gil Werman	\\
+\hline
+1	&	0.0107	&	0.0124	&	0.0219	&	0.014	\\
+2	&	0.0235	&	0.0167	&	0.0201	&	0.0144	\\
+3	&	0.0488	&	0.0211	&	0.019	&	0.0154	\\
+4	&	0.0895	&	0.0247	&	0.0184	&	0.0148	\\
+5	&	0.143	&	0.0273	&	0.0176	&	0.0143	\\
+6	&	0.216	&	0.037	&	0.0184	&	0.0149	\\
+7	&	0.308	&	0.0372	&	0.0176	&	0.0167	\\
+8	&	0.423	&	0.0401	&	0.0172	&	0.015	\\
+9	&	0.563	&	0.0466	&	0.0171	&	0.0151	\\
+10	&	0.73	&	0.0455	&	0.0166	&	0.0148	\\
+15	&	2.07	&	0.0624	&	0.0165	&	0.0153	\\
+20	&	4.46	&	0.0885	&	0.0159	&	0.0148	\\
+25	&	8.22	&	0.104	&	0.0163	&	0.0153	\\
+30	&	13.6	&	0.118	&	0.0161	&	0.0151	\\
+40	&	30.9	&	0.153	&	0.0163	&	0.0153	\\
+50	&	58.6	&	0.196	&	0.0168	&	0.0156	\\
+100	&	452	&	0.339	&	0.0163	&	0.0157	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for morphological gradient transformation by boxes using several algorithm implementations applied to the $256 \times 256$ cthead image.\label{tab:perfGradient}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccc}
+\hline
+Radius	&	Basic	&	Histogram	&	Anchor	&	van Herk / Gil Werman	\\
+\hline
+1	&	0.0105	&	0.0208	&	0.0167	&	0.0146	\\
+2	&	0.0217	&	0.0283	&	0.0157	&	0.0148	\\
+3	&	0.0424	&	0.0352	&	0.0145	&	0.0154	\\
+4	&	0.0752	&	0.0444	&	0.0142	&	0.0159	\\
+5	&	0.117	&	0.049	&	0.0143	&	0.0159	\\
+6	&	0.172	&	0.0573	&	0.014	&	0.0162	\\
+7	&	0.24	&	0.0676	&	0.0139	&	0.0165	\\
+8	&	0.324	&	0.072	&	0.0141	&	0.0169	\\
+9	&	0.425	&	0.0804	&	0.0141	&	0.0175	\\
+10	&	0.546	&	0.093	&	0.0143	&	0.0176	\\
+15	&	1.5	&	0.14	&	0.0154	&	0.019	\\
+20	&	3.19	&	0.178	&	0.0155	&	0.0204	\\
+25	&	5.9	&	0.235	&	0.0164	&	0.0219	\\
+30	&	9.9	&	0.274	&	0.0175	&	0.0236	\\
+40	&	23	&	0.383	&	0.0193	&	0.0272	\\
+50	&	45.3	&	0.522	&	0.0213	&	0.0298	\\
+100	&	421	&	1.6	&	0.0346&		0.0493	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for morphological opening by boxes using several algorithm implementations applied to the $256 \times 256$ cthead image.\label{tab:perfOpening}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccc}
+\hline
+Threads	&	Basic	&	Histogram	&	Anchor	&	van Herk / Gil Werman	\\
+\hline
+1	&	3.37	&	2.34	&	1.23	&	1.02	\\
+2	&	1.69	&	1.64	&	0.73	&	0.615	\\
+3	&	1.14	&	1.15	&	0.46	&	0.367	\\
+4	&	0.871	&	0.866	&	0.39	&	0.312	\\
+5	&	1.06	&	1.03	&	0.505	&	0.437	\\
+6	&	1.01	&	0.949	&	0.489	&	0.422	\\
+7	&	0.963	&	0.866	&	0.493	&	0.422	\\
+8	&	0.918	&	0.849	&	0.506	&	0.453	\\
+9	&	0.947	&	0.897	&	0.548	&	0.491	\\
+10	&	0.92	&	0.874	&	0.568	&	0.506	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for morphological opening by boxes using several algorithm implementations applied to the $3200 \times 2400$ image.\label{tab:perfThreads}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{cccc}
+\hline
+Radius	&	Histogram	&	van Herk / Gil Werma	&	Anchorn	\\
+\hline
+1	&	0.354	&	0.379	&	0.532	\\
+2	&	0.486	&	0.329	&	0.455	\\
+3	&	0.62	&	0.338	&	0.411	\\
+4	&	0.74	&	0.763	&	0.995	\\
+5	&	0.862	&	0.757	&	0.95	\\
+6	&	1.03	&	0.759	&	0.968	\\
+7	&	1.17	&	0.77	&	0.936	\\
+8	&	1.31	&	0.768	&	0.894	\\
+9	&	1.52	&	1.11	&	1.28	\\
+10	&	1.67	&	1.08	&	1.31	\\
+15	&	2.42	&	1.09	&	1.25	\\
+20	&	3.13	&	1.16	&	1.29	\\
+25	&	3.84	&	1.14	&	1.26	\\
+30	&	4.64	&	1.17	&	1.3	\\
+40	&	5.95	&	1.19	&	1.23	\\
+50	&	7.6	&	1.22	&	1.41	\\
+100	&	19	&	1.36	&	1.34	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for morphological opening by boxes using several algorithm implementations applied to the $256 \times 256$ cthead image.\label{tab:perf2Dpoly}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccc}
+\hline
+Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
+1	&	0.557	&	0.916	&	0.858	&	1.45	 \\
+2	&	1.15	&	0.924	&	1.64	&	1.56	 \\
+3	&	2.08	&	0.932	&	2.74	&	1.56	 \\
+4	&	3.47	&	0.92	&	4.34	&	1.55	 \\
+5	&	5.13	&	0.935	&	6.34	&	1.55	 \\
+6	&	7.06	&	1.08	&	8.53	&	1.62	 \\
+7	&	9.42	&	1.08	&	11.3	&	1.63	 \\
+8	&	12.2	&	0.922	&	14.5	&	1.63	 \\
+9	&	15.3	&	0.924	&	18	&	1.63	 \\
+10	&	18.9	&	0.925	&	22.1	&	1.63	 \\
+15	&	43.3	&	0.929	&	50.2	&	1.64	 \\
+20	&	80.1	&	0.936	&	91.8	&	1.64	 \\
+25	&	131	&	0.939	&	149	&	1.64	 \\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for mean and standard deviation using direct and box convolution implementations applied to the $3200 \times 2400$ image.\label{tab:perfBoxConv}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccc}
+\hline
+Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
+\hline
+1	&	2.1	&	0.942	&	2.75	&	1.57	\\
+2	&	1.06	&	0.466	&	1.38	&	0.805	\\
+3	&	0.716	&	0.391	&	0.932	&	0.551	\\
+4	&	0.538	&	0.335	&	0.846	&	0.453	\\
+5	&	0.659	&	0.327	&	0.902	&	0.525	\\
+6	&	0.616	&	0.298	&	0.728	&	0.47	\\
+7	&	0.579	&	0.285	&	0.758	&	0.466	\\
+8	&	0.558	&	0.27	&	0.729	&	0.473	\\
+9	&	0.614	&	0.289	&	0.771	&	0.467	\\
+10	&	0.578	&	0.281	&	0.732	&	0.476	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for mean and standard deviation using direct and box convolution implementations applied to the $3200 \times 2400$ image.\label{tab:perfBoxConv-threads}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccc}
+\hline
+Radius	&	Direct	&	Moving window	&	Separable direct	&	Separable moving window	\\
+\hline
+1	&	0.00355	&	0.00498	&	0.00487	&	0.00668	\\
+2	&	0.00642	&	0.00706	&	0.0054	&	0.00679	\\
+3	&	0.0127	&	0.00761	&	0.00861	&	0.00756	\\
+5	&	0.0259	&	0.00936	&	0.00803	&	0.00749	\\
+10	&	0.121	&	0.0162	&	0.0129	&	0.00765	\\
+15	&	0.35	&	0.0224	&	0.0206	&	0.00755	\\
+20	&	0.771	&	0.0252	&	0.0278	&	0.0076	\\
+40	&	5.59	&	0.059	&	0.0699	&	0.00871	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for mean filters using direct and sliding window implementations applied to the $256 \times 256$ cthead image.\label{tab:perfRankMean}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccc}
+\hline
+Radius	&	Direct	&	Huang	&	Separable direct	&	Separable huang	\\
+\hline
+1	&	0.00642	&	0.00758	&	0.0071	&	0.0093	\\
+5	&	0.0448	&	0.0186	&	0.0153	&	0.00913	\\
+10	&	0.177	&	0.0265	&	0.0291	&	0.00895	\\
+15	&	0.445	&	0.0342	&	0.0362	&	0.00876	\\
+20	&	0.93	&	0.043	&	0.0444	&	0.00925	\\
+40	&	6.21	&	0.061	&	0.0899	&	0.00936	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for median filters using direct and sliding window implementations applied to the $256 \times 256$ cthead image. The separable median is an approximation and therefore doesn't produce the same result as the direct or sliding algorithms.\label{tab:perfRankMedian}}
+\end{table}
 
 
 
