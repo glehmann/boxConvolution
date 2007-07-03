@@ -473,7 +473,8 @@ runtime independent of kernel size, as expected.
 \subfigure[Mean]{\includegraphics[scale=0.62]{fastRankMean-perfMean}}
 \subfigure[Median]{\includegraphics[scale=0.62]{fastRankMean-perfMedian}}
 \caption{Execution times for several algorithms of mean filters (a) and
-median filters (b).\label{fig:perfRank}}
+median filters (b).\label{fig:perfRank}
+Results are reported in Tables \ref{tab:perfRankMean} and  \ref{tab:perfRankMedian}.}
 \end{center}
 \end{figure}
 
@@ -727,6 +728,46 @@ Radius	&	Histogram	&	van Herk / Gil Werma	&	Anchorn	\\
 \centering
 \begin{tabular}{ccccc}
 \hline
+Radius	&	Direct	&	Moving window	&	Separable direct	&	Separable moving window	\\
+\hline
+1	&	0.00355	&	0.00498	&	0.00487	&	0.00668	\\
+2	&	0.00642	&	0.00706	&	0.0054	&	0.00679	\\
+3	&	0.0127	&	0.00761	&	0.00861	&	0.00756	\\
+5	&	0.0259	&	0.00936	&	0.00803	&	0.00749	\\
+10	&	0.121	&	0.0162	&	0.0129	&	0.00765	\\
+15	&	0.35	&	0.0224	&	0.0206	&	0.00755	\\
+20	&	0.771	&	0.0252	&	0.0278	&	0.0076	\\
+40	&	5.59	&	0.059	&	0.0699	&	0.00871	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for mean filters using direct and sliding window implementations applied to the $256 \times 256$ cthead image.\label{tab:perfRankMean}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccc}
+\hline
+Radius	&	Direct	&	Huang	&	Separable direct	&	Separable huang	\\
+\hline
+1	&	0.00642	&	0.00758	&	0.0071	&	0.0093	\\
+5	&	0.0448	&	0.0186	&	0.0153	&	0.00913	\\
+10	&	0.177	&	0.0265	&	0.0291	&	0.00895	\\
+15	&	0.445	&	0.0342	&	0.0362	&	0.00876	\\
+20	&	0.93	&	0.043	&	0.0444	&	0.00925	\\
+40	&	6.21	&	0.061	&	0.0899	&	0.00936	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for median filters using direct and sliding window implementations applied to the $256 \times 256$ cthead image. The separable median is an approximation and therefore doesn't produce the same result as the direct or sliding algorithms.\label{tab:perfRankMedian}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\begin{tabular}{ccccc}
+\hline
 Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
 1	&	0.557	&	0.916	&	0.858	&	1.45	 \\
 2	&	1.15	&	0.924	&	1.64	&	1.56	 \\
@@ -768,46 +809,6 @@ Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
 \hline
 \end{tabular}
 \caption{Execution times in seconds for mean and standard deviation using direct and box convolution implementations applied to the $3200 \times 2400$ image.\label{tab:perfBoxConv-threads}}
-\end{table}
-
-
-\begin{table}[phtb]
-\centering
-\begin{tabular}{ccccc}
-\hline
-Radius	&	Direct	&	Moving window	&	Separable direct	&	Separable moving window	\\
-\hline
-1	&	0.00355	&	0.00498	&	0.00487	&	0.00668	\\
-2	&	0.00642	&	0.00706	&	0.0054	&	0.00679	\\
-3	&	0.0127	&	0.00761	&	0.00861	&	0.00756	\\
-5	&	0.0259	&	0.00936	&	0.00803	&	0.00749	\\
-10	&	0.121	&	0.0162	&	0.0129	&	0.00765	\\
-15	&	0.35	&	0.0224	&	0.0206	&	0.00755	\\
-20	&	0.771	&	0.0252	&	0.0278	&	0.0076	\\
-40	&	5.59	&	0.059	&	0.0699	&	0.00871	\\
-\hline
-\hline
-\end{tabular}
-\caption{Execution times in seconds for mean filters using direct and sliding window implementations applied to the $256 \times 256$ cthead image.\label{tab:perfRankMean}}
-\end{table}
-
-
-\begin{table}[phtb]
-\centering
-\begin{tabular}{ccccc}
-\hline
-Radius	&	Direct	&	Huang	&	Separable direct	&	Separable huang	\\
-\hline
-1	&	0.00642	&	0.00758	&	0.0071	&	0.0093	\\
-5	&	0.0448	&	0.0186	&	0.0153	&	0.00913	\\
-10	&	0.177	&	0.0265	&	0.0291	&	0.00895	\\
-15	&	0.445	&	0.0342	&	0.0362	&	0.00876	\\
-20	&	0.93	&	0.043	&	0.0444	&	0.00925	\\
-40	&	6.21	&	0.061	&	0.0899	&	0.00936	\\
-\hline
-\hline
-\end{tabular}
-\caption{Execution times in seconds for median filters using direct and sliding window implementations applied to the $256 \times 256$ cthead image. The separable median is an approximation and therefore doesn't produce the same result as the direct or sliding algorithms.\label{tab:perfRankMedian}}
 \end{table}
 
 
