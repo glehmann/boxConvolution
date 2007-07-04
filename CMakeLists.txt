@@ -2,7 +2,7 @@
 PROJECT(boxConvolution)
 
 # set the name of the input image used to run the test
-SET(INPUT_IMAGE ${CMAKE_SOURCE_DIR}/images/cthead1.png)
+SET(INPUT_IMAGE ${CMAKE_CURRENT_SOURCE_DIR}/images/cthead1.png)
 
 #include some macros from another file...
 INCLUDE(IJMacros.txt)
@@ -11,7 +11,7 @@ INCLUDE(IJMacros.txt)
 ENABLE_TESTING()
 INCLUDE(Dart)
 FIND_PROGRAM(ITK_TEST_DRIVER itkTestDriver)
-SET(TEST_COMMAND ${ITK_TEST_DRIVER} --add-before-env PATH ${CMAKE_BINARY_DIR})
+SET(TEST_COMMAND ${ITK_TEST_DRIVER} --add-before-env PATH ${CMAKE_CURRENT_BINARY_DIR})
 
 #Declare any external dependencies that your project may have here.
 #examples include: ITK, VTK, JPEG, PNG, OpenGL, ZLIB, Perl, Java
@@ -84,18 +84,18 @@ ENDIF(BUILD_TESTING)
 
 ADD_TEST(Mean ${TEST_COMMAND}
    check ${INPUT_IMAGE} out.png orig.png acc.nrrd rescaledAcc.png 3
-   --compare out.png ${CMAKE_SOURCE_DIR}/images/test.png
-   --compare acc.nrrd ${CMAKE_SOURCE_DIR}/images/acc.nrrd
-   --compare rescaledAcc.png ${CMAKE_SOURCE_DIR}/images/rescaledAcc.png
+   --compare out.png ${CMAKE_CURRENT_SOURCE_DIR}/images/test.png
+   --compare acc.nrrd ${CMAKE_CURRENT_SOURCE_DIR}/images/acc.nrrd
+   --compare rescaledAcc.png ${CMAKE_CURRENT_SOURCE_DIR}/images/rescaledAcc.png
 )
 
 ADD_TEST(Mean3D ${TEST_COMMAND}
-   check3D ${CMAKE_SOURCE_DIR}/images/ESCells.img out3D.tif orig3D.tif acc3D.nrrd rescaledAcc3D.tif 3
-   --compare out3D.tif ${CMAKE_SOURCE_DIR}/images/out3D.tif
+   check3D ${CMAKE_CURRENT_SOURCE_DIR}/images/ESCells.img out3D.tif orig3D.tif acc3D.nrrd rescaledAcc3D.tif 3
+   --compare out3D.tif ${CMAKE_CURRENT_SOURCE_DIR}/images/out3D.tif
 )
 
 ADD_TEST(Sigma ${TEST_COMMAND}
    check_sigma ${INPUT_IMAGE} sigma.png sorig.png 3
-   --compare sigma.png ${CMAKE_SOURCE_DIR}/images/sigma.png
+   --compare sigma.png ${CMAKE_CURRENT_SOURCE_DIR}/images/sigma.png
 )
 
