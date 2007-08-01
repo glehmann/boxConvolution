@@ -1,7 +1,7 @@
 #ifndef __itkBoxMeanImageFilter_h
 #define __itkBoxMeanImageFilter_h
 
-#include "itkImageToImageFilter.h"
+#include "itkBoxImageFilter.h"
 
 namespace itk {
 
@@ -14,21 +14,21 @@ namespace itk {
 
 template<class TInputImage, class TOutputImage=TInputImage>
 class ITK_EXPORT BoxMeanImageFilter : 
-    public ImageToImageFilter<TInputImage, TOutputImage>
+    public BoxImageFilter<TInputImage, TOutputImage>
 {
 public:
   /** Standard class typedefs. */
   typedef BoxMeanImageFilter Self;
-  typedef ImageToImageFilter<TInputImage, TOutputImage>  Superclass;
+  typedef BoxImageFilter<TInputImage, TOutputImage>  Superclass;
   typedef SmartPointer<Self>        Pointer;
   typedef SmartPointer<const Self>  ConstPointer;
   
   /** Standard New method. */
-  itkNewMacro(Self);  
+  itkNewMacro(Self);
 
   /** Runtime information support. */
   itkTypeMacro(BoxMeanImageFilter, 
-               BoxMeanImageFilter);
+               BoxImageFilter);
   
   /** Image related typedefs. */
   typedef TInputImage InputImageType;
@@ -58,23 +58,7 @@ public:
 #endif
 
     
-  /** n-dimensional Kernel radius. in voxels */
-  typedef typename TInputImage::SizeType RadiusType ;
-  void SetRadius(unsigned R)
-  {
-    m_Radius.Fill(R);
-  }
-  
-
-
-  itkSetMacro(Radius, RadiusType)
-  itkGetConstReferenceMacro(Radius, RadiusType)
-
-  void GenerateInputRequestedRegion() ;
-    
-
 protected:
-  RadiusType m_Radius;
   BoxMeanImageFilter();
   ~BoxMeanImageFilter() {};
 

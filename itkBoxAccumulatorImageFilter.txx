@@ -11,21 +11,9 @@ template<class TInputImage, class TOutputImage>
 BoxAccumulatorImageFilter<TInputImage, TOutputImage>
 ::BoxAccumulatorImageFilter()
 {
-  m_Radius.Fill(1);
-}
-
-template<class TInputImage, class TOutputImage>
-void
-BoxAccumulatorImageFilter<TInputImage, TOutputImage>
-::PrintSelf(std::ostream &os, Indent indent) const
-{
-  Superclass::PrintSelf(os, indent);
-
-  os << indent << "Radius: " << m_Radius << std::endl;
 }
 
 
-////////////////////////////////////////////
 template<class TInputImage, class TOutputImage>
 void
 BoxAccumulatorImageFilter<TInputImage, TOutputImage>

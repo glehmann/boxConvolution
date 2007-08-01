@@ -51,8 +51,6 @@ public:
   /** Image related typedefs. */
   itkStaticConstMacro(ImageDimension, unsigned int,
                       TInputImage::ImageDimension);
-  /** n-dimensional Kernel radius. */
-  typedef typename TInputImage::SizeType RadiusType ;
 
   void GenerateData();
 
@@ -60,13 +58,9 @@ protected:
   BoxAccumulatorImageFilter();
   ~BoxAccumulatorImageFilter() {};
 
-  void PrintSelf(std::ostream& os, Indent indent) const;
-
 private:
   BoxAccumulatorImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
-
-  RadiusType m_Radius;
 
 };
 

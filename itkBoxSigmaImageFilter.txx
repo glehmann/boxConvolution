@@ -21,58 +21,8 @@ template<class TInputImage, class TOutputImage>
 BoxSigmaImageFilter<TInputImage, TOutputImage>
 ::BoxSigmaImageFilter()
 {
-  m_Radius.Fill(1);
 }
-template<class TInputImage, class TOutputImage>
-void
-BoxSigmaImageFilter<TInputImage, TOutputImage>
-::GenerateInputRequestedRegion()
-{
-  // call the superclass' implementation of this method
-  Superclass::GenerateInputRequestedRegion();
 
-  // get pointers to the input and output
-  typename Superclass::InputImagePointer  inputPtr =
-    const_cast< TInputImage * >( this->GetInput() );
-
-  if ( !inputPtr )
-    {
-    return;
-    }
-
-  // get a copy of the input requested region (should equal the output
-  // requested region)
-  typename TInputImage::RegionType inputRequestedRegion;
-  inputRequestedRegion = inputPtr->GetRequestedRegion();
-
-  // pad the input requested region by the operator radius
-  inputRequestedRegion.PadByRadius( m_Radius );
-
-  // crop the input requested region at the input's largest possible region
-  if ( inputRequestedRegion.Crop(inputPtr->GetLargestPossibleRegion()) )
-    {
-    inputPtr->SetRequestedRegion( inputRequestedRegion );
-    return;
-    }
-  else
-    {
-    // Couldn't crop the region (requested region is outside the largest
-    // possible region).  Throw an exception.
-
-    // store what we tried to request (prior to trying to crop)
-    inputPtr->SetRequestedRegion( inputRequestedRegion );
-
-    // build an exception
-    InvalidRequestedRegionError e(__FILE__, __LINE__);
-    OStringStream msg;
-    msg << static_cast<const char *>(this->GetNameOfClass())
-        << "::GenerateInputRequestedRegion()";
-    e.SetLocation(msg.str().c_str());
-    e.SetDescription("Requested region is (at least partially) outside the largest possible region.");
-    e.SetDataObject(inputPtr);
-    throw e;
-    }
-}
 
 #if 0
 template<class TInputImage, class TOutputImage>
@@ -97,7 +47,7 @@ BoxSigmaImageFilter<TInputImage, TOutputImage>
   typename AccumType::Pointer accumulator = AccumType::New();
   typename MeanType::Pointer boxmean = MeanType::New();
   accumulator->SetInput(this->GetInput());
-  boxmean->SetRadius(m_Radius);
+  boxmean->SetRadius(this->GetRadius());
   boxmean->SetInput(accumulator->GetOutput());
   boxmean->SetNumberOfThreads( this->GetNumberOfThreads() );
   boxmean->GraftOutput(this->GetOutput());
@@ -125,7 +75,7 @@ BoxSigmaImageFilter<TInputImage, TOutputImage>
   typename TInputImage::SizeType internalRadius;
   for( int i=0; i<TInputImage::ImageDimension; i++ )
     {
-    internalRadius[i] = m_Radius[i] + 1;
+    internalRadius[i] = this->GetRadius()[i] + 1;
     }
   
 
@@ -148,7 +98,7 @@ BoxSigmaImageFilter<TInputImage, TOutputImage>
   BoxSigmaCalculatorFunction<AccumImageType, TOutputImage>(accImageConst, outputImage,
 							  accumRegion,
 							  outputRegionForThread,
-							  m_Radius,
+							  this->GetRadius(),
 							  progress);
 						     
 

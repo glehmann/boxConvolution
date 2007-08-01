@@ -12,7 +12,6 @@ template<class TInputImage, class TOutputImage>
 BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
 ::BoxMeanCalculatorImageFilter()
 {
-  m_Radius.Fill(1);
 }
 
 template<class TInputImage, class TOutputImage>
@@ -32,7 +31,7 @@ BoxMeanCalculatorImageFilter<TInputImage, TOutputImage>
 
   BoxMeanCalculatorFunction<TInputImage, TOutputImage>(accImage, outputImage,
 						       inputRegion, outputRegionForThread,
-						       m_Radius, progress);
+						       this->GetRadius(), progress);
 
 }
 
