@@ -347,6 +347,36 @@ indicated otherwise, all filters will behave basically the same way as
 other kernel filters, requiring either a radius or a neighborhood to
 be specified.
 
+\subsection{Common filters}
+
+All the filters provided with those packages are implemented as subclasses
+of one of two new classes: {\em itk::BoxImageFilter} and {\em itk::KernelImageFilter}.
+{\em itk::BoxImageFilter} is a subclass of {\em itk::ImageToImageFilter} and provides
+some features used in all the box based filters:
+\begin{itemize}
+  \item the management of the radius of the box,
+  \item and the enlargement of the input requested region, according to the box size.
+\end{itemize}
+{\em itk::KernelImageFilter} is a subclass of {\em itk::BoxImageFilter}, and provides
+some features used in all the kernel based filters, in addition to the features of the
+{\em itk::BoxImageFilter} class:
+\begin{itemize}
+  \item the management of the kernel,
+  \item a redefined SetRadius() method to create a box kernel with the provided radius,
+  \item a default box kernel of radius $1$\footnote{This feature should help many ITK
+beginers who are often {\em not} providing a structuring element to the morphology filters,
+and thus get difficultly understandable crashes.}.
+\end{itemize}
+
+A third filter, {\em itk::SeparableImageFilter}, is used to easily implement a separable
+version of an algorithm, by using its basic implementation in a subclass of
+{\em itk::BoxImageFilter}, or any other subclass of {\em ImageToImageFilter} with
+a {\em SetRadius()} method.
+
+Some filters already in ITK have been modified to use {\em itk::BoxImageFilter} or
+{\em itk::KernelImageFilter}\footnote{itk::MedianImageFilter, itkMeanImageFilter,
+itk::NoiseImageFilter and itk::MorphologyImageFilter.}. Their API is not modified.
+
 \subsection{Morphology filters -- consolidatedMorphology}
 
 
@@ -363,6 +393,13 @@ structuring elements with different characteristics:
 	line structuring elements, taking the desired radius and number of 
 	lines as parameters. In the 3D case an approximation of a sphere will 
 	be attempted. Caution is advised because this is not well tested yet.
+  \item \verb$Cross()$ produces a cross structuring element. It takes the radius 
+	of the structuring element as parameter.
+  \item \verb$Annulus()$ produces an annulus structuring element. It takes the radius 
+	of the structuring element as parameter, as well as the thickness of the annulus,
+	and a boolean to indicate whether the center neighbors should be set inside the
+	neighborhood or not\footnote{The {\em Annulus()} constructor  is a contribution
+of Dan Mueller.}.
   \item \verb$FromImage()$ produces a structuring element from an image. The image is passed
 as parameter to the method. A optional parameter can also be passed: the pixel value
 to be considered as the foreground value in the image. This value defaults to
@@ -558,10 +595,6 @@ sort of change isn't practical.
 The three packages do share some components, and some refactoring is
 called for. This most widely used components are histograms and
 sliding window infrastructure, which need to be consolidated.
-
-All the kernel based filters in ITK would also benefit to hinerit a common
-super class which manage the neighborhood size and/or the kernel, and which
-provide the infrastructure for the separable operations.
 
 \section{Comments and Conclusions}
 This article has provided background theory for and implementations of
