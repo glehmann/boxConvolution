@@ -510,9 +510,11 @@ runtime independent of kernel size, as expected.
 \begin{center}
 \subfigure[Mean]{\includegraphics[scale=0.62]{fastRankMean-perfMean}}
 \subfigure[Median]{\includegraphics[scale=0.62]{fastRankMean-perfMedian}}
-\caption{Execution times for several algorithms of mean filters (a) and
-median filters (b).\label{fig:perfRank}
-Results are reported in Tables \ref{tab:perfRankMean} and  \ref{tab:perfRankMedian}.}
+\subfigure[Threads]{\includegraphics[scale=0.62]{fastRankMean-perf_threads-large}}
+\caption{Execution times for an increasing kernel size with several algorithms of mean filters (a) and
+median filters (b). Excution times with an an increasing number of threads (c).\label{fig:perfRank}
+Results are reported in Tables \ref{tab:perfRankMean}, \ref{tab:perfRankMedian}
+and \ref{tab:perfRankThreads}.}
 \end{center}
 \end{figure}
 
@@ -623,27 +625,28 @@ used for the timing tests.
 
 \begin{table}[phtb]
 \centering
-\begin{tabular}{ccccccc}
+\small
+\begin{tabular}{cccccccc}
 \hline
-Radius	&	Basic	&	Separable	&	Histogram	&	Separable histogram	&	Anchor	&	van Herk / Gil Werman	\\
+Radius	&	Basic	&	Iterative	&	Separable	&	Histogram	&	Separable histogram	&	Anchor	&	van Herk / Gil Werman	\\
 \hline
-1	&	0.00477	&	0.00491	&	0.013	&	0.012	&	0.0144	&	0.00725	\\
-2	&	0.0114	&	0.0101	&	0.0161	&	0.0119	&	0.0135	&	0.00743	\\
-3	&	0.024	&	0.0146	&	0.0193	&	0.0116	&	0.0129	&	0.00794	\\
-4	&	0.0444	&	0.0192	&	0.0231	&	0.0114	&	0.0126	&	0.00755	\\
-5	&	0.0714	&	0.0247	&	0.0261	&	0.0114	&	0.0121	&	0.0074	\\
-6	&	0.107	&	0.0299	&	0.0313	&	0.0116	&	0.0127	&	0.00771	\\
-7	&	0.153	&	0.034	&	0.0358	&	0.0113	&	0.0121	&	0.00859	\\
-8	&	0.211	&	0.0407	&	0.038	&	0.0112	&	0.0121	&	0.00773	\\
-9	&	0.281	&	0.0442	&	0.0434	&	0.0114	&	0.012	&	0.00779	\\
-10	&	0.365	&	0.0486	&	0.0446	&	0.0111	&	0.0118	&	0.00763	\\
-15	&	1.03	&	0.074	&	0.0604	&	0.0115	&	0.0116	&	0.00794	\\
-20	&	2.23	&	0.104	&	0.079	&	0.0113	&	0.0113	&	0.00762	\\
-25	&	4.11	&	0.129	&	0.0968	&	0.0114	&	0.0116	&	0.0079	\\
-30	&	6.82	&	0.154	&	0.111	&	0.0114	&	0.0115	&	0.00781	\\
-40	&	15.4	&	0.214	&	0.153	&	0.0116	&	0.0116	&	0.00785	\\
-50	&	29.3	&	0.285	&	0.19	&	0.0119	&	0.0117	&	0.00804	\\
-100	&	226	&	0.767	&	0.355	&	0.0129	&	0.0117	&	0.00809	\\
+1	&	0.00437	&	0.00436	&	0.00734	&	0.00987	&	0.0121	&	0.0111	&	0.00715	\\
+2	&	0.0118	&	0.00872	&	0.00901	&	0.0131	&	0.0121	&	0.0101	&	0.00733	\\
+3	&	0.0241	&	0.013	&	0.0108	&	0.0161	&	0.0118	&	0.00979	&	0.00756	\\
+4	&	0.0446	&	0.0175	&	0.0127	&	0.0213	&	0.0117	&	0.00922	&	0.00736	\\
+5	&	0.0718	&	0.0219	&	0.0149	&	0.0237	&	0.0116	&	0.00923	&	0.00768	\\
+6	&	0.107	&	0.0262	&	0.017	&	0.0262	&	0.0114	&	0.00906	&	0.00768	\\
+7	&	0.154	&	0.0311	&	0.0192	&	0.0315	&	0.0113	&	0.00899	&	0.00779	\\
+8	&	0.211	&	0.0349	&	0.0223	&	0.0334	&	0.0115	&	0.00865	&	0.00759	\\
+9	&	0.281	&	0.0395	&	0.0246	&	0.0385	&	0.0113	&	0.00892	&	0.00784	\\
+10	&	0.365	&	0.0441	&	0.0273	&	0.0399	&	0.0113	&	0.0086	&	0.00767	\\
+15	&	1.03	&	0.0668	&	0.0451	&	0.0585	&	0.0115	&	0.00851	&	0.00798	\\
+20	&	2.23	&	0.0895	&	0.0657	&	0.0761	&	0.0118	&	0.00819	&	0.0077	\\
+25	&	4.11	&	0.114	&	0.0911	&	0.0958	&	0.0114	&	0.00826	&	0.00778	\\
+30	&	6.84	&	0.139	&	0.121	&	0.108	&	0.0115	&	0.00847	&	0.00801	\\
+40	&	15.5	&	0.194	&	0.195	&	0.145	&	0.0116	&	0.00872	&	0.00811	\\
+50	&	29.4	&	0.257	&	0.283	&	0.185	&	0.0118	&	0.00858	&	0.00798	\\
+100	&	227	&	0.719	&	0.974	&	0.348	&	0.0127	&	0.00858	&	0.0082	\\
 \hline
 \hline
 \end{tabular}
@@ -653,6 +656,7 @@ Radius	&	Basic	&	Separable	&	Histogram	&	Separable histogram	&	Anchor	&	van Herk
 
 \begin{table}[phtb]
 \centering
+\small
 \begin{tabular}{ccccc}
 \hline
 Radius	&	Basic	&	Histogram	&	Anchor	&	van Herk / Gil Werman	\\
@@ -683,6 +687,7 @@ Radius	&	Basic	&	Histogram	&	Anchor	&	van Herk / Gil Werman	\\
 
 \begin{table}[phtb]
 \centering
+\small
 \begin{tabular}{ccccc}
 \hline
 Radius	&	Basic	&	Histogram	&	Anchor	&	van Herk / Gil Werman	\\
@@ -713,6 +718,7 @@ Radius	&	Basic	&	Histogram	&	Anchor	&	van Herk / Gil Werman	\\
 
 \begin{table}[phtb]
 \centering
+\small
 \begin{tabular}{ccccc}
 \hline
 Threads	&	Basic	&	Histogram	&	Anchor	&	van Herk / Gil Werman	\\
@@ -736,9 +742,10 @@ Threads	&	Basic	&	Histogram	&	Anchor	&	van Herk / Gil Werman	\\
 
 \begin{table}[phtb]
 \centering
+\small
 \begin{tabular}{cccc}
 \hline
-Radius	&	Histogram	&	van Herk / Gil Werma	&	Anchorn	\\
+Radius	&	Histogram	&	van Herk / Gil Werman	&	Anchorn	\\
 \hline
 1	&	0.354	&	0.379	&	0.532	\\
 2	&	0.486	&	0.329	&	0.455	\\
@@ -766,6 +773,7 @@ Radius	&	Histogram	&	van Herk / Gil Werma	&	Anchorn	\\
 
 \begin{table}[phtb]
 \centering
+\small
 \begin{tabular}{ccccc}
 \hline
 Radius	&	Direct	&	Moving window	&	Separable direct	&	Separable moving window	\\
@@ -787,6 +795,7 @@ Radius	&	Direct	&	Moving window	&	Separable direct	&	Separable moving window	\\
 
 \begin{table}[phtb]
 \centering
+\small
 \begin{tabular}{ccccc}
 \hline
 Radius	&	Direct	&	Huang	&	Separable direct	&	Separable huang	\\
@@ -806,6 +815,31 @@ Radius	&	Direct	&	Huang	&	Separable direct	&	Separable huang	\\
 
 \begin{table}[phtb]
 \centering
+\small
+\begin{tabular}{ccccccc}
+\hline
+Threads	&	fastApproxMaskRank	&	fastApproxRank	&	maskedRank	&	movingWindowMean	&	rank	&	separableMean	\\
+\hline
+1	&	1.83	&	1.78	&	3.99	&	2.17	&	4.36	&	1.23	\\
+2	&	0.921	&	0.898	&	2.02	&	1.09	&	2.21	&	0.634	\\
+3	&	0.698	&	0.704	&	1.48	&	0.788	&	1.48	&	0.471	\\
+4	&	0.516	&	0.505	&	1.07	&	0.559	&	1.12	&	0.403	\\
+5	&	0.613	&	0.637	&	1.24	&	0.764	&	1.34	&	0.461	\\
+6	&	0.582	&	0.548	&	1.12	&	0.607	&	1.17	&	0.42	\\
+7	&	0.546	&	0.539	&	1.14	&	0.642	&	1.26	&	0.398	\\
+8	&	0.513	&	0.506	&	1.06	&	0.598	&	1.13	&	0.402	\\
+9	&	0.569	&	0.558	&	1.12	&	0.615	&	1.22	&	0.412	\\
+10	&	0.558	&	0.55	&	1.07	&	0.603	&	1.16	&	0.408	\\
+\hline
+\hline
+\end{tabular}
+\caption{Execution times in seconds for median and mean filters using direct and sliding window implementations applied to the $3200 \times 2400$ image.\label{tab:perfRankThreads}}
+\end{table}
+
+
+\begin{table}[phtb]
+\centering
+\small
 \begin{tabular}{ccccc}
 \hline
 Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
@@ -824,6 +858,7 @@ Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
 25	&	131	&	0.939	&	149	&	1.64	 \\
 \hline
 \hline
+\small
 \end{tabular}
 \caption{Execution times in seconds for mean and standard deviation using direct and box convolution implementations applied to the $3200 \times 2400$ image.\label{tab:perfBoxConv}}
 \end{table}
@@ -831,6 +866,7 @@ Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
 
 \begin{table}[phtb]
 \centering
+\small
 \begin{tabular}{ccccc}
 \hline
 Size  &  Direct Mean &  Box Mean & Direct sigma & Box sigma\\
