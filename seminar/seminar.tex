@@ -1,0 +1,183 @@
+\documentclass[pdf,prettybox]{prosper}
+\usepackage{graphicx}
+\title{Efficient implementation of kernel filtering}
+\author{Richard Beare{$^1$} {\small{and}} Ga\"etan Lehmann{$^2$}}
+\institution{{$^1$}Department of Medicine, Monash University, Australia.\\
+{$^2$}INRA, UMR 1198; ENVA; CNRS, FRE 2857, Biologie du D\'eveloppement et
+Reproduction, Jouy en Josas, F-78350, France}
+
+\Logo(1cm,-1cm){\includegraphics[height=0.5cm]{monash}\hspace{2cm}\includegraphics[height=0.5cm]{LogoINRA-Couleur}\hspace{2cm}\includegraphics[height=0.5cm]{mima2}}
+
+\begin{document}
+\maketitle
+
+\begin{slide}{Introduction}
+\begin{itemize}
+\item Describe methods that reduce computational complexity of kernel filters by orders of magnitude.
+\item Discuss the tradeoffs that need to be considered when using these methods.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Motivation}
+Large median filter $111 \times 111$ for background estimation in microscopy image.
+\begin{itemize}
+\item Direct implementation takes at least 20 minutes.
+\item Efficient approximation takes less than 5 seconds.
+\end{itemize}
+\end{slide}
+
+\overlays{5}{%
+\begin{slide}{Improving filter performance}
+\begin{itemstep}
+\item Recursive computation
+	\begin{itemize}
+	\item An output value can be computed based on a neighbouring output.
+	\item This reduces complexity by eliminating repeated computation.
+	\end{itemize}
+\item Separability
+	\begin{itemize}
+	\item Certain multidimensional kernels can be decomposed into a number of one dimensional operations.
+	\end{itemize}
+\end{itemstep}
+\end{slide}
+}
+
+\begin{slide}{Improving filter performance}
+\begin{itemize}
+\item ITK Gaussian filtering classes use both approaches.
+\end{itemize}
+\end{slide}
+
+
+\overlays{2}{%
+\begin{slide}{Sliding window}
+\onlySlide*{1}{%
+\begin{centering}
+\begin{figure*}[p]
+\includegraphics[width=6cm]{sliding}
+\end{figure*}
+\end{centering}}%
+\onlySlide*{2}{
+\begin{centering}
+\begin{figure*}[p]
+\includegraphics[width=6cm]{slidingB}
+\end{figure*}
+\end{centering}}%
+\end{slide}
+}
+
+\begin{slide}{Sliding window}
+\begin{itemize}
+\item Collect a summary of all pixels in the neighbourhood.
+\item Compute the output value from the summary.
+\item Move the window and update the summary.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Sliding window}
+Reduces complexity from $O(n^d)$ to $O(n^{d-1})$
+
+The standard updatable summaries are:
+\begin{itemize}
+\item Sum or sum of squares for mean and variance computations.
+\item Histograms for rank filters including mathematical morphology.
+\end{itemize}
+\end{slide}
+
+\overlays{3}{%
+\begin{slide}{Separability/Decomposition}
+\begin{itemstep}
+\item Some useful filters can be computed using a cascade of operations along lines.
+\item Special forms of updateable computations exist for some operations along lines.
+\item These lead to operations with complexity independent of line length.
+\end{itemstep}
+\end{slide}
+}
+\begin{slide}{Mathematical Morphology}
+\begin{itemize}
+\item van Herk/Gil Werman algorithm.
+\item Erosions/dilations along lines with 3 operations per pixel.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Mathematical Morphology}
+\vspace{0.4cm}
+\begin{centering}
+\begin{figure*}
+\includegraphics[width=7.5cm]{vHGWexpl}
+\end{figure*}
+\end{centering}
+\end{slide}
+
+\begin{slide}{Mathematical Morphology}
+\begin{itemize}
+\item Decomposition of shapes as follows:
+	\begin{itemize}
+	\item Hyper-boxes - cascade of line operations parallel to image axes.
+	\item Appoximate circles in 2D.
+	\item Experimental approximation to spheres.
+	\end{itemize}
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Mathematical Morphology}
+\vspace{0.4cm}
+\begin{centering}
+\begin{figure*}
+\includegraphics[width=4cm]{kernel}
+\end{figure*}
+\end{centering}
+\end{slide}
+
+\begin{slide}{Robust smoothing filters}
+\begin{itemize}
+\item Median filters aren't separable.
+\item Applying a cascade of line based rank filters produces a fast, robust smoother.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Accumulation image methods}
+\begin{itemize}
+\item Useful for sums, means or variances of boxes.
+\item One accumulation image can be used to evaluate lots of different kernel sizes.
+\item Can also be used for binary morphology and binary median filters.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Accumulation image methods}
+\vspace{0.4cm}
+\begin{centering}
+\begin{figure*}
+\includegraphics[width=7cm]{accum2D}
+\end{figure*}
+\end{centering}
+\end{slide}
+
+\begin{slide}{Accumulation image methods}
+\vspace{0.4cm}
+\begin{centering}
+\begin{figure*}
+\includegraphics[width=7cm]{accumMean2d}
+\end{figure*}
+\end{centering}
+\end{slide}
+
+\begin{slide}{Summary of filters}
+\begin{itemize}
+\item {\bf Mathematical Morphology using flat structuring elements} - arbitrary, box, polygon.
+\item {\bf Accumulation image methods - mean and standard deviation}. Only one kernel size.
+\item {\bf Rank filters} - arbitrary, boxes - separable approximation, also masked versions.
+\end{itemize}
+\end{slide}
+
+\begin{slide}{Summary of complexities}
+\begin{itemize}
+\item Sliding window - $O(n^{d-1})$ - arbitary morphology, arbitary rank and mean filters.
+\item Box convolution - constant complexity.
+\item MM along lines - constant complexity - approximate circles, boxes.
+\item Rank operations along lines - uses sliding windows and provides a fast, robust smoother.
+\end{itemize}
+\end{slide}
+
+
+\end{document}
